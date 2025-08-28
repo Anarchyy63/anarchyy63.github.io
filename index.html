@@ -230,7 +230,7 @@
                 <input type="text" id="channelInput" placeholder="Enter Twitch channel name" style="width: 100%; margin-bottom: 10px;">
                 <input type="text" id="keywordInput" placeholder="Chat keyword (e.g., !enter)" value="!enter" style="width: 100%; margin-bottom: 10px;">
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="tokenInput" placeholder="OAuth token will appear here automatically" style="flex: 1;" readonly>
+                    <input type="text" id="tokenInput" placeholder="Click 'Get Token' button first" style="flex: 1;">
                     <button onclick="getOAuthToken()" class="control-btn" style="white-space: nowrap; padding: 12px 15px;">🔑 Get Token</button>
                 </div>
                 <button onclick="connectToTwitch()" id="connectBtn" class="control-btn">🔗 Connect to Twitch Chat</button>
@@ -486,7 +486,7 @@
         
         function connectToTwitch() {
             const channel = document.getElementById('channelInput').value.trim().toLowerCase();
-            const token = document.getElementById('tokenInput').value.trim();
+            let token = document.getElementById('tokenInput').value.trim();
             const keyword = document.getElementById('keywordInput').value.trim();
             
             console.log('Attempting connection with:', { channel, keyword, tokenLength: token.length });
@@ -496,9 +496,16 @@
                 return;
             }
             
+            // Auto-format token if user forgot oauth: prefix
+            if (!token.startsWith('oauth:') && token.length > 10) {
+                token = 'oauth:' + token;
+                document.getElementById('tokenInput').value = token;
+                console.log('Auto-added oauth: prefix to token');
+            }
+            
             // Validate token format
             if (!token.startsWith('oauth:')) {
-                alert('Token must start with "oauth:" - check your token format');
+                alert('Token must start with "oauth:" or be a valid access token');
                 return;
             }
             
@@ -688,60 +695,52 @@
             }, 3000);
         }
         
-        // Built-in OAuth token generation
+        // Built-in OAuth token generation using working alternatives
         function getOAuthToken() {
-            // Use a public Twitch client ID for chat reading (this is safe to embed)
-            const publicClientId = 'kimne78kx3ncx6brgo4mv6wki5h1ko';  // Twitch's own public client ID for chat
-            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            
-            // Create OAuth URL
-            const oauthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=${publicClientId}&redirect_uri=${redirectUri}&scope=chat:read&state=oauth_flow`;
-            
-            // Store that we're getting a token
-            sessionStorage.setItem('getting_token', 'true');
-            
-            // Redirect to Twitch OAuth
-            window.location.href = oauthUrl;
-        }
-        
-        // Check for OAuth token on page load
-        window.addEventListener('load', function() {
-            checkForOAuthToken();
-        });
-        
-        function checkForOAuthToken() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const token = params.get('access_token');
-            const state = params.get('state');
-            
-            // Only process if we were expecting a token
-            if (token && (state === 'oauth_flow' || sessionStorage.getItem('getting_token'))) {
-                const oauthToken = `oauth:${token}`;
-                document.getElementById('tokenInput').value = oauthToken;
-                
-                // Show success message
-                updateConnectionStatus('Token received! Ready to connect', 'success');
-                
-                // Clear the hash and session storage for security
-                history.replaceState(null, null, window.location.pathname);
-                sessionStorage.removeItem('getting_token');
-                
-                // Auto-fill a default channel if empty
-                if (!document.getElementById('channelInput').value) {
-                    document.getElementById('channelInput').placeholder = 'Enter YOUR channel name here';
+            const options = {
+                option1: {
+                    name: "TwitchTokenGenerator.com (Recommended)",
+                    url: "https://twitchtokengenerator.com",
+                    instructions: "1. Select 'chat:read' scope\n2. Click 'Generate Token'\n3. Copy the token that appears"
+                },
+                option2: {
+                    name: "AntiScuff Token Generator", 
+                    url: "https://antiscuff.com/oauth/",
+                    instructions: "1. Login with Twitch\n2. Copy the token that appears"
                 }
-                
-                // Visual feedback
-                const tokenField = document.getElementById('tokenInput');
-                tokenField.style.background = 'rgba(78, 205, 196, 0.2)';
-                setTimeout(() => {
-                    tokenField.style.background = 'rgba(255, 255, 255, 0.9)';
-                }, 2000);
-                
-                console.log('✅ OAuth token automatically obtained!');
-            }
+            };
+            
+            const choice = confirm(
+                `Choose a token generator:\n\n` +
+                `Option 1: ${options.option1.name}\n` +
+                `${options.option1.instructions}\n\n` +
+                `Option 2: ${options.option2.name}\n` +
+                `${options.option2.instructions}\n\n` +
+                `Click OK for Option 1, Cancel for Option 2`
+            );
+            
+            const selected = choice ? options.option1 : options.option2;
+            
+            // Open the selected token generator
+            window.open(selected.url, '_blank');
+            
+            // Update UI to guide user
+            updateConnectionStatus(`Get token from new tab: ${selected.name}`, 'warning');
+            document.getElementById('tokenInput').placeholder = 'Paste your oauth:token here (or just the token - we\'ll add oauth: automatically)';
+            document.getElementById('tokenInput').style.background = 'rgba(255, 255, 255, 0.9)';
+            
+            // Add helpful text
+            setTimeout(() => {
+                alert(`Instructions:\n\n${selected.instructions}\n\n4. Come back here and paste the token\n5. We'll format it correctly for you!`);
+            }, 1000);
         }
+        
+        // Check for OAuth token on page load - simplified version
+        window.addEventListener('load', function() {
+            // Just initialize the app, no complex OAuth checking
+            drawWheel();
+            updateParticipantsList();
+        });
         
         // Event listeners
         document.getElementById('spinBtn').onclick = spinWheel;
