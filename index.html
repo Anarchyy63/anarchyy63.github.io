@@ -812,7 +812,7 @@
 
         // Twitch authentication
         function loginWithTwitch() {
-            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join('+')}&state=${Math.random().toString(36)}`;
+            const authUrl = `https://id.twitch.tv/oauth2/authorize?client-id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join('+')}&state=${Math.random().toString(36)}`;
             window.location.href = authUrl;
         }
 
