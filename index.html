@@ -230,7 +230,7 @@
                 <input type="text" id="channelInput" placeholder="Enter Twitch channel name" style="width: 100%; margin-bottom: 10px;">
                 <input type="text" id="keywordInput" placeholder="Chat keyword (e.g., !enter)" value="!enter" style="width: 100%; margin-bottom: 10px;">
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="tokenInput" placeholder="Click 'Get Token' button first" style="flex: 1;">
+                    <input type="text" id="tokenInput" placeholder="Get your token first using the button →" style="flex: 1;">
                     <button onclick="getOAuthToken()" class="control-btn" style="white-space: nowrap; padding: 12px 15px;">🔑 Get Token</button>
                 </div>
                 <button onclick="connectToTwitch()" id="connectBtn" class="control-btn">🔗 Connect to Twitch Chat</button>
@@ -248,20 +248,20 @@
             </div>
             
             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
-                <h3>💡 Quick Setup for Streamers:</h3>
+                <h3>💡 Super Easy Setup for Streamers:</h3>
                 <div style="font-size: 14px; line-height: 1.6;">
-                    <strong>Easy 3-step setup:</strong><br>
-                    1. Click "🔑 Get Token" and authorize with Twitch<br>
-                    2. Enter your channel name and keyword<br>
-                    3. Click "Connect to Twitch Chat" - done!<br><br>
+                    <strong>Quick 3-step setup:</strong><br>
+                    1. Click "🔑 Get Token" → Authorize with Twitch → Copy token<br>
+                    2. Enter your channel name and entry keyword<br>
+                    3. Click "Connect to Twitch Chat" - you're live!<br><br>
                     
                     <strong>For your viewers:</strong><br>
                     • Tell them to type your keyword in chat<br>
-                    • They'll auto-enter the giveaway<br>
+                    • They'll automatically enter the giveaway<br>
                     • Each user can only enter once<br>
                     • 5-second cooldown prevents spam<br><br>
                     
-                    <strong>Ready to stream!</strong> 🎮
+                    <strong>Token Generator:</strong> <a href="https://antiscuff.com/oauth/" target="_blank" style="color: #4ecdc4;">AntiScuff.com</a> (trusted by Twitch community)
                 </div>
             </div>
         </div>
@@ -291,6 +291,15 @@
             '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
             '#10AC84', '#EE5A24', '#0084FF', '#B33771', '#FD79A8'
         ];
+        
+        // Utility function - define early to avoid reference errors
+        function updateConnectionStatus(status, type) {
+            const statusElement = document.getElementById('chatStatus');
+            statusElement.textContent = status;
+            statusElement.style.color = type === 'success' ? '#4ecdc4' : 
+                                      type === 'error' ? '#ff6b6b' : 
+                                      type === 'warning' ? '#ffd93d' : '#fff';
+        }
         
         function drawWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -484,12 +493,6 @@
             });
         }
         
-        function updateConnectionStatus(status, type) {
-            const statusElement = document.getElementById('chatStatus');
-            statusElement.textContent = status;
-            statusElement.style.color = type === 'success' ? '#4ecdc4' : 
-                                      type === 'error' ? '#ff6b6b' : 
-                                      type === 'warning' ? '#ffd93d' : '#fff';
         }
         
         function connectToTwitch() {
