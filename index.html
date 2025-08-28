@@ -79,7 +79,7 @@
             color: var(--text-primary);
             padding: 10px 15px;
             border-radius: 50px;
-            cursor: ;
+            cursor: pointer;
             font-size: 16px;
             transition: all 0.3s ease;
             z-index: 1000;
@@ -99,7 +99,7 @@
             color: var(--text-primary);
             padding: 10px 15px;
             border-radius: 50px;
-            cursor: ;
+            cursor: pointer;
             font-size: 16px;
             transition: all 0.3s ease;
             z-index: 1000;
@@ -617,13 +617,13 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                // Softer tick sound - 50% quieter than original
-                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                // Tick sound at 80% original volume
+                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
                 oscillator.type = 'sine';
                 
-                // Increased volume to 50% of original (0.005 -> 0.015)
-                gainNode.gain.setValueAtTime(0.015, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.005);
+                // 80% of original volume (was 0.1, now 0.08)
+                gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
                 
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.02);
@@ -782,9 +782,9 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer (back to right side)
+            // Draw pointer (on right side pointing toward center)
             ctx.beginPath();
-            ctx.moveTo(centerX - radius - 15, centerY);
+            ctx.moveTo(centerX + radius + 15, centerY);
             ctx.lineTo(centerX + radius - 10, centerY - 15);
             ctx.lineTo(centerX + radius - 10, centerY + 15);
             ctx.fillStyle = '#9146ff';
