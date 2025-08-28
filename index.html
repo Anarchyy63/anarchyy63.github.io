@@ -1322,77 +1322,73 @@
             }
         });
 
-       //     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js">
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js">
-        
-        // === Firebase Setup ===
-        const firebaseConfig = {
-           apiKey: "AIzaSyBMoZoi2v6cT5_tX5HH9QIRJXacKKly7Do",
-      authDomain: "wheel-sync-db.firebaseapp.com",
-      projectId: "wheel-sync-db",
-      storageBucket: "wheel-sync-db.firebasestorage.app",
-      messagingSenderId: "393442110174",
-      appId: "1:393442110174:web:f3fc737d1438bdfb44b04f"
-    };
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+// <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js"></script>
 
-        // === Firebase Sync Helpers ===
-        function syncParticipants() {
-            db.ref("participants").set(participants);
-        }
-        function listenForFirebaseUpdates() {
-            db.ref("participants").on("value", snapshot => {
-                const data = snapshot.val() || [];
-                participants = data;
-                updateParticipantsList();
-                drawWheel();
-            });
-        }
+<script>
+  // === Firebase Setup ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyBMoZoi2v6cT5_tX5HH9QIRJXacKKly7Do",
+    authDomain: "wheel-sync-db.firebaseapp.com",
+    projectId: "wheel-sync-db",
+    storageBucket: "wheel-sync-db.firebasestorage.app",
+    messagingSenderId: "393442110174",
+    appId: "1:393442110174:web:f3fc737d1438bdfb44b04f"
+  };
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
+  // === Firebase Sync Helpers ===
+  function syncParticipants() {
+    db.ref("participants").set(participants);
+  }
+  function listenForFirebaseUpdates() {
+    db.ref("participants").on("value", snapshot => {
+      const data = snapshot.val() || [];
+      participants = data;
+      updateParticipantsList();
+      drawWheel();
+    });
+  }
 
-// === Overlay Winner Spin ===
-function spinWheelToWinner(winnerName) {
+  // === Overlay Winner Spin ===
+  function spinWheelToWinner(winnerName) {
     if (!participants.length) return;
 
-    // Find index of winner
     const winnerIndex = participants.indexOf(winnerName);
     if (winnerIndex === -1) {
-        console.warn("Winner not in participants list:", winnerName);
-        return;
+      console.warn("Winner not in participants list:", winnerName);
+      return;
     }
 
-    // Calculate slice angle
     const sliceAngle = 2 * Math.PI / participants.length;
-    const randomOffset = Math.random() * sliceAngle; // to avoid exact edges
+    const randomOffset = Math.random() * sliceAngle;
     const targetAngle = (participants.length - winnerIndex - 0.5) * sliceAngle + randomOffset;
 
-    // Total spin: multiple rotations + target
-    const rotations = 6; // number of full spins
+    const rotations = 6;
     const spinAngle = rotations * 2 * Math.PI + targetAngle;
 
     let start = null;
-    const duration = 6000; // 6 seconds
+    const duration = 6000;
     const initialRotation = currentRotation || 0;
 
     function animateSpin(timestamp) {
-        if (!start) start = timestamp;
-        const progress = (timestamp - start) / duration;
-        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-        currentRotation = initialRotation + eased * spinAngle;
-        drawWheel();
+      if (!start) start = timestamp;
+      const progress = (timestamp - start) / duration;
+      const eased = 1 - Math.pow(1 - progress, 3);
+      currentRotation = initialRotation + eased * spinAngle;
+      drawWheel();
 
-        if (progress < 1) {
-            requestAnimationFrame(animateSpin);
-        } else {
-            console.log("✅ Overlay wheel stopped on winner:", winnerName);
-        }
+      if (progress < 1) {
+        requestAnimationFrame(animateSpin);
+      } else {
+        console.log("✅ Overlay wheel stopped on winner:", winnerName);
+      }
     }
 
     requestAnimationFrame(animateSpin);
-}
-
+  }
 </script>
 
 </body>
