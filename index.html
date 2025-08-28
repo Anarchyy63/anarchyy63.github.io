@@ -618,7 +618,7 @@
                 gainNode.connect(audioContext.destination);
                 
                 // Tick sound with higher frequency for clicking effect
-                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
                 oscillator.type = 'square';
                 
                 // 80% of original volume (was 0.1, now 0.08)
