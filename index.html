@@ -1094,10 +1094,7 @@
             
             updateConnectionStatus('Connecting...', 'warning');
             document.getElementById('connectBtn').disabled = true;
-
-            function connectToTwitchOverlay() {
-            connectToTwitch();
-            }
+            
             
             // Disconnect existing connection
             if (twitchSocket) {
@@ -1153,6 +1150,10 @@
                 alert('Connection failed: ' + error.message);
             }
         }
+
+          function connectToTwitchOverlay() {
+            connectToTwitch();
+            }
 
         function disconnectFromTwitch() {
             if (twitchSocket) {
