@@ -79,7 +79,7 @@
             color: var(--text-primary);
             padding: 10px 15px;
             border-radius: 50px;
-            cursor: pointer;
+            cursor: ;
             font-size: 16px;
             transition: all 0.3s ease;
             z-index: 1000;
@@ -99,7 +99,7 @@
             color: var(--text-primary);
             padding: 10px 15px;
             border-radius: 50px;
-            cursor: pointer;
+            cursor: ;
             font-size: 16px;
             transition: all 0.3s ease;
             z-index: 1000;
@@ -618,12 +618,12 @@
                 gainNode.connect(audioContext.destination);
                 
                 // Softer tick sound - 50% quieter than original
-                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
                 oscillator.type = 'sine';
                 
                 // Increased volume to 50% of original (0.005 -> 0.015)
                 gainNode.gain.setValueAtTime(0.015, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.005);
                 
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.02);
@@ -784,7 +784,7 @@
             
             // Draw pointer (back to right side)
             ctx.beginPath();
-            ctx.moveTo(centerX + radius + 15, centerY);
+            ctx.moveTo(centerX - radius - 15, centerY);
             ctx.lineTo(centerX + radius - 10, centerY - 15);
             ctx.lineTo(centerX + radius - 10, centerY + 15);
             ctx.fillStyle = '#9146ff';
