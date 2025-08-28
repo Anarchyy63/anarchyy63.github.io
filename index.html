@@ -531,6 +531,7 @@
         let congratsSound = null;
         let audioContext = null;
         let soundsEnabled = true;
+        let currentTickOscillator = null; // Track current tick to prevent overlaps
 
         // Twitch OAuth configuration
         const CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht'; // You'll need to register your app
@@ -596,6 +597,15 @@
             if (!soundsEnabled || !audioContext) return;
             
             try {
+                // Stop any existing tick sound to prevent overlap
+                if (currentTickOscillator) {
+                    try {
+                        currentTickOscillator.stop();
+                    } catch (e) {
+                        // Oscillator may already be stopped
+                    }
+                }
+                
                 // Resume AudioContext if it's suspended (browser requirement)
                 if (audioContext.state === 'suspended') {
                     audioContext.resume();
@@ -607,15 +617,23 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                // Create a short tick sound
-                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                oscillator.type = 'square';
+                // Create a much softer tick sound
+                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                oscillator.type = 'sine';
                 
-                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                // Much quieter volume
+                gainNode.gain.setValueAtTime(0.005, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
                 
                 oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.1);
+                oscillator.stop(audioContext.currentTime + 0.02);
+                
+                // Store reference and clear it when done
+                currentTickOscillator = oscillator;
+                oscillator.onended = () => {
+                    currentTickOscillator = null;
+                };
+                
             } catch (error) {
                 console.log('Audio playback failed:', error);
             }
@@ -764,11 +782,11 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer
+            // Draw pointer (pointing inward from left side)
             ctx.beginPath();
-            ctx.moveTo(centerX + radius + 25, centerY);
-            ctx.lineTo(centerX + radius - 15, centerY - 15);
-            ctx.lineTo(centerX + radius - 15, centerY + 15);
+            ctx.moveTo(centerX - radius - 15, centerY);
+            ctx.lineTo(centerX - radius + 10, centerY - 15);
+            ctx.lineTo(centerX - radius + 10, centerY + 15);
             ctx.fillStyle = '#9146ff';
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
