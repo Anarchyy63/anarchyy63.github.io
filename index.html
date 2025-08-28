@@ -534,30 +534,38 @@
             }
             
             try {
-                // Connect to Twitch IRC
+                // Connect to Twitch IRC  
+                console.log('Connecting to Twitch IRC WebSocket...');
                 twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
                 
                 twitchSocket.onopen = function() {
-                    console.log('WebSocket opened, sending auth...');
-                    // Send authentication
-                    twitchSocket.send(`PASS ${token}`);
-                    twitchSocket.send(`NICK justinfan${Math.floor(Math.random() * 100000)}`);
-                    twitchSocket.send(`JOIN #${channelName}`);
+                    console.log('✅ WebSocket opened successfully');
+                    updateConnectionStatus('Connected - Authenticating...', 'warning');
                     
-                    updateConnectionStatus('Authenticating...', 'warning');
+                    // Send authentication with proper IRC format
+                    console.log('Sending authentication...');
+                    twitchSocket.send(`PASS ${token}\r\n`);
+                    twitchSocket.send(`NICK justinfan${Math.floor(Math.random() * 100000)}\r\n`);
+                    
+                    // Wait a moment before joining
+                    setTimeout(() => {
+                        console.log(`Joining channel #${channelName}...`);
+                        twitchSocket.send(`JOIN #${channelName}\r\n`);
+                    }, 1000);
+                    
                     document.getElementById('connectBtn').textContent = '🔌 Disconnect';
                     document.getElementById('connectBtn').onclick = disconnectFromTwitch;
-                    
-                    console.log(`Sent join command for #${channelName}`);
                 };
                 
                 twitchSocket.onmessage = function(event) {
-                    console.log('Received message:', event.data);
                     handleTwitchMessage(event.data);
                 };
                 
                 twitchSocket.onclose = function(event) {
                     console.log('WebSocket closed:', event.code, event.reason);
+                    if (event.code !== 1000) {
+                        console.error('Unexpected close code:', event.code);
+                    }
                     updateConnectionStatus('Disconnected', 'error');
                     document.getElementById('connectBtn').textContent = '🔗 Connect to Twitch Chat';
                     document.getElementById('connectBtn').onclick = connectToTwitch;
@@ -565,13 +573,26 @@
                 };
                 
                 twitchSocket.onerror = function(error) {
-                    console.error('WebSocket error:', error);
-                    updateConnectionStatus('Connection Error', 'error');
-                    alert('Failed to connect to Twitch. Check console for details.');
+                    console.error('WebSocket error details:', error);
+                    console.error('Error type:', error.type);
+                    console.error('Error target:', error.target);
+                    console.error('Ready state:', twitchSocket ? twitchSocket.readyState : 'undefined');
+                    
+                    updateConnectionStatus('Connection Error - Check Console', 'error');
+                    
+                    // More specific error messages
+                    if (error.type === 'error') {
+                        alert('WebSocket connection failed. This could be:\n' +
+                              '• Network blocking WebSocket connections\n' +
+                              '• Browser security restrictions\n' +
+                              '• Invalid token format\n' +
+                              '\nCheck browser console for details.');
+                    }
                 };
                 
             } catch (error) {
                 console.error('Failed to create WebSocket:', error);
+                updateConnectionStatus('Failed to Create Connection', 'error');
                 alert('Connection failed: ' + error.message);
             }
         }
@@ -703,16 +724,15 @@
             }, 3000);
         }
         
-        // Built-in OAuth token generation using working alternatives
         function getOAuthToken() {
             const options = {
                 option1: {
-                    name: "TwitchTokenGenerator.com (Recommended)",
+                    name: "TwitchTokenGenerator.com (Most Popular)",
                     url: "https://twitchtokengenerator.com",
-                    instructions: "1. Select 'chat:read' scope\n2. Click 'Generate Token'\n3. Copy the token that appears"
+                    instructions: "1. Select 'chat:read' scope\n2. Click 'Generate Token'\n3. Copy the token (don't need the oauth: part)"
                 },
                 option2: {
-                    name: "AntiScuff Token Generator", 
+                    name: "AntiScuff OAuth Generator", 
                     url: "https://antiscuff.com/oauth/",
                     instructions: "1. Login with Twitch\n2. Copy the token that appears"
                 }
@@ -720,11 +740,11 @@
             
             const choice = confirm(
                 `Choose a token generator:\n\n` +
-                `Option 1: ${options.option1.name}\n` +
+                `✅ OPTION 1: ${options.option1.name}\n` +
                 `${options.option1.instructions}\n\n` +
-                `Option 2: ${options.option2.name}\n` +
+                `✅ OPTION 2: ${options.option2.name}\n` +
                 `${options.option2.instructions}\n\n` +
-                `Click OK for Option 1, Cancel for Option 2`
+                `Click OK for Option 1 (Recommended)\nClick Cancel for Option 2`
             );
             
             const selected = choice ? options.option1 : options.option2;
@@ -733,14 +753,14 @@
             window.open(selected.url, '_blank');
             
             // Update UI to guide user
-            updateConnectionStatus(`Get token from new tab: ${selected.name}`, 'warning');
-            document.getElementById('tokenInput').placeholder = 'Paste your oauth:token here (or just the token - we\'ll add oauth: automatically)';
+            updateConnectionStatus(`Opening ${selected.name} - follow instructions in new tab`, 'warning');
+            document.getElementById('tokenInput').placeholder = 'Paste your token here (we\'ll format it automatically)';
             document.getElementById('tokenInput').style.background = 'rgba(255, 255, 255, 0.9)';
             
             // Add helpful text
             setTimeout(() => {
-                alert(`Instructions:\n\n${selected.instructions}\n\n4. Come back here and paste the token\n5. We'll format it correctly for you!`);
-            }, 1000);
+                alert(`📋 Instructions:\n\n${selected.instructions}\n\n4. Come back here and paste the token\n5. Don't worry about the oauth: prefix - we'll add it!\n\n💡 Tip: Both generators are trusted by the Twitch community`);
+            }, 1500);
         }
         
         // Check for OAuth token on page load - simplified version
