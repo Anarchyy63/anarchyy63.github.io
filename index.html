@@ -203,7 +203,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: ;
+            font-weight: 600;
             transition: all 0.3s ease;
             border: 1px solid transparent;
         }
@@ -319,7 +319,7 @@
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-weight: ;
+            font-weight: 500;
         }
 
         .status-connected { color: var(--success-color); }
@@ -358,7 +358,7 @@
             padding: 15px 20px;
             border-radius: 10px;
             font-weight: bold;
-            z-index: 1;
+            z-index: 1500;
             animation: slideIn 0.3s ease-out;
             box-shadow: 0 4px 15px var(--shadow-color);
         }
@@ -408,19 +408,35 @@
             }
         }
 
-        /* Custom scrollbar */
-        .participants-list::-webkit-scrollbar {
-            width: 8px;
+        .overlay-mode {
+            background: transparent !important;
+            padding: 0 !important;
         }
 
-        .participants-list::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-            border-radius: 4px;
+        .overlay-mode .header,
+        .overlay-mode .theme-toggle,
+        .overlay-mode .sound-toggle,
+        .overlay-mode #authSection,
+        .overlay-mode .controls-section {
+            display: none !important;
         }
 
-        .participants-list::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
-            border-radius: 4px;
+        .overlay-mode .container {
+            display: block !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 20px !important;
+        }
+
+        .overlay-mode .wheel-section {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+        }
+
+        .overlay-mode #wheelCanvas {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) !important;
         }
     </style>
 </head>
@@ -534,7 +550,7 @@
         let currentTickOscillator = null; // Track current tick to prevent overlaps
 
         // Twitch OAuth configuration
-        const CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht'; // You'll need to register your app
+        const CLIENT_ID = 'your_client_id_here'; // You'll need to register your app
         const REDIRECT_URI = window.location.origin + window.location.pathname;
         const SCOPES = ['chat:read', 'user:read:email'];
 
@@ -619,7 +635,7 @@
                 
                 // Tick sound with higher frequency for clicking effect
                 oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
-                oscillator.type = 'square';
+                oscillator.type = 'sine';
                 
                 // 80% of original volume (was 0.1, now 0.08)
                 gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
@@ -782,11 +798,11 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer (on right side pointing toward wheel center)
+            // Draw pointer (at top pointing down toward center)
             ctx.beginPath();
-            ctx.moveTo(centerX + radius - 18, centerY);
-            ctx.lineTo(centerX + radius + 15, centerY - 12);
-            ctx.lineTo(centerX + radius + 15, centerY + 12);
+            ctx.moveTo(centerX, centerY - radius - 15);
+            ctx.lineTo(centerX - 12, centerY - radius + 5);
+            ctx.lineTo(centerX + 12, centerY - radius + 5);
             ctx.fillStyle = '#9146ff';
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
@@ -911,8 +927,8 @@
             document.getElementById('spinBtn').disabled = true;
             document.getElementById('statusText').textContent = 'Spinning...';
             
-            const spinDuration = 3000 + Math.random() * 2000; // 3-5 seconds
-            const spinAmount = Math.random() * 6 + 15; // 15-21 full rotations
+            const spinDuration = 4000 + Math.random() * 3000; // 4-7 seconds (was 3-5)
+            const spinAmount = Math.random() * 4 + 12; // 12-16 full rotations (was 15-21)
             const startRotation = currentRotation;
             const startTime = Date.now();
             
@@ -1245,11 +1261,51 @@
             }
         });
 
+        // Check for overlay mode
+        function checkOverlayMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isOverlay = urlParams.get('overlay') === 'true';
+            
+            if (isOverlay) {
+                document.body.classList.add('overlay-mode');
+                // In overlay mode, skip auth and show the wheel directly
+                showAppSection();
+                
+                // Connect to WebSocket for real-time updates if token provided
+                const token = urlParams.get('token');
+                const channel = urlParams.get('channel');
+                const keyword = urlParams.get('keyword') || '!enter';
+                
+                if (token && channel) {
+                    // Simulate user info for overlay mode
+                    userInfo = { login: channel };
+                    accessToken = token;
+                    
+                    // Set up connection parameters
+                    channelName = channel.toLowerCase();
+                    entryKeyword = keyword;
+                    
+                    // Auto-connect to chat
+                    setTimeout(() => {
+                        connectToTwitchOverlay();
+                    }, 1000);
+                }
+                
+                return true;
+            }
+            return false;
+        }
+        
         // Initialize app
         window.addEventListener('load', function() {
             initializeTheme();
             initializeAudio();
-            checkForToken();
+            
+            // Check if this is overlay mode first
+            if (!checkOverlayMode()) {
+                // Normal mode - check for authentication
+                checkForToken();
+            }
         });
     </script>
 </body>
