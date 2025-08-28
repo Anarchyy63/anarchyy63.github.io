@@ -90,6 +90,26 @@
             box-shadow: 0 5px 15px var(--shadow-color);
         }
 
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            right: 180px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sound-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -405,6 +425,10 @@
     </style>
 </head>
 <body data-theme="dark">
+    <button class="sound-toggle" onclick="toggleSound()">
+        🔊 Sound On
+    </button>
+    
     <button class="theme-toggle" onclick="toggleTheme()">
         🌙 Dark Mode
     </button>
@@ -501,9 +525,15 @@
         let participantCooldown = new Map();
         let accessToken = null;
         let userInfo = null;
+        
+        // Audio variables
+        let tickSound = null;
+        let congratsSound = null;
+        let audioContext = null;
+        let soundsEnabled = true;
 
         // Twitch OAuth configuration
-        const CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht'; // You'll need to register your app
+        const CLIENT_ID = 'your_client_id_here'; // You'll need to register your app
         const REDIRECT_URI = window.location.origin + window.location.pathname;
         const SCOPES = ['chat:read', 'user:read:email'];
 
@@ -531,6 +561,120 @@
             
             body.setAttribute('data-theme', savedTheme);
             themeToggle.textContent = savedTheme === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode';
+        }
+
+        // Sound management
+        function initializeAudio() {
+            // Initialize sound preference
+            soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
+            updateSoundToggle();
+            
+            // Create audio context for sound generation
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                audioContext = new (AudioContext || webkitAudioContext)();
+            }
+        }
+
+        function toggleSound() {
+            soundsEnabled = !soundsEnabled;
+            localStorage.setItem('soundsEnabled', soundsEnabled.toString());
+            updateSoundToggle();
+            
+            // Test sound when enabled
+            if (soundsEnabled && audioContext) {
+                playTickSound();
+            }
+        }
+
+        function updateSoundToggle() {
+            const soundToggle = document.querySelector('.sound-toggle');
+            soundToggle.textContent = soundsEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+        }
+
+        // Sound generation functions
+        function playTickSound() {
+            if (!soundsEnabled || !audioContext) return;
+            
+            try {
+                // Resume AudioContext if it's suspended (browser requirement)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Create a short tick sound
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.type = 'square';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (error) {
+                console.log('Audio playback failed:', error);
+            }
+        }
+
+        function playCongratsSound() {
+            if (!soundsEnabled || !audioContext) return;
+            
+            try {
+                // Resume AudioContext if it's suspended
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // Create a celebratory chord progression
+                const frequencies = [523.25, 659.25, 783.99]; // C, E, G major chord
+                const duration = 0.8;
+                
+                frequencies.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    
+                    const startTime = audioContext.currentTime + (index * 0.1);
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                });
+                
+                // Add a high celebratory tone
+                setTimeout(() => {
+                    const highOsc = audioContext.createOscillator();
+                    const highGain = audioContext.createGain();
+                    
+                    highOsc.connect(highGain);
+                    highGain.connect(audioContext.destination);
+                    
+                    highOsc.frequency.setValueAtTime(1046.5, audioContext.currentTime); // High C
+                    highOsc.type = 'sine';
+                    
+                    highGain.gain.setValueAtTime(0, audioContext.currentTime);
+                    highGain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+                    highGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.6);
+                    
+                    highOsc.start(audioContext.currentTime);
+                    highOsc.stop(audioContext.currentTime + 0.6);
+                }, 300);
+                
+            } catch (error) {
+                console.log('Congratulations sound failed:', error);
+            }
         }
 
         // Wheel colors optimized for readability
@@ -754,13 +898,35 @@
             const startRotation = currentRotation;
             const startTime = Date.now();
             
+            // Variables for tick sound timing
+            let lastTickTime = 0;
+            const minTickInterval = 50; // Minimum time between ticks in ms
+            let currentTickInterval = minTickInterval;
+            
             function animate() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / spinDuration, 1);
                 
                 // Smooth easing function
                 const easeOut = 1 - Math.pow(1 - progress, 4);
+                const oldRotation = currentRotation;
                 currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
+                
+                // Calculate rotation speed for tick timing
+                const rotationDelta = Math.abs(currentRotation - oldRotation);
+                const now = Date.now();
+                
+                // Play tick sound based on rotation speed
+                if (soundsEnabled && rotationDelta > 0.05) { // Only tick if moving significantly
+                    // Adjust tick interval based on speed (faster = more frequent ticks)
+                    const speed = rotationDelta / 16.67; // Normalize to ~60fps
+                    currentTickInterval = Math.max(minTickInterval, 200 / Math.max(speed, 1));
+                    
+                    if (now - lastTickTime > currentTickInterval) {
+                        playTickSound();
+                        lastTickTime = now;
+                    }
+                }
                 
                 drawWheel();
                 
@@ -775,6 +941,9 @@
                     
                     lastWinner = winner;
                     showWinner(winner);
+                    
+                    // Play congratulations sound
+                    setTimeout(() => playCongratsSound(), 500);
                     
                     isSpinning = false;
                     document.getElementById('spinBtn').disabled = false;
@@ -1071,6 +1240,7 @@
         // Initialize app
         window.addEventListener('load', function() {
             initializeTheme();
+            initializeAudio();
             checkForToken();
         });
     </script>
