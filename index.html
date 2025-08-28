@@ -503,7 +503,7 @@
         let userInfo = null;
 
         // Twitch OAuth configuration
-        const CLIENT_ID = kveb0wkhdo0uk1ysf3ctzbz3kufhpq; // You'll need to register your app
+        const CLIENT_ID = cwj8nbsvc36p84j31gy42mzpcmx7ht; // You'll need to register your app
         const REDIRECT_URI = window.location.origin + window.location.pathname;
         const SCOPES = ['chat:read', 'user:read:email'];
 
@@ -634,7 +634,7 @@
 
         // Twitch authentication
         function loginWithTwitch() {
-            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join('+')}&state=${Math.random().toString(36)}`;
+            const authUrl = `https://id.twitch.tv/oauth2/authorize?=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join('+')}&state=${Math.random().toString(36)}`;
             window.location.href = authUrl;
         }
 
