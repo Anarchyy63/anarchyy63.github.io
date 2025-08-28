@@ -1318,7 +1318,11 @@
                 checkForToken();
             }
         });
-    
+
+       //     <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js">
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js">
+        
         // === Firebase Setup ===
         const firebaseConfig = {
            apiKey: "AIzaSyBMoZoi2v6cT5_tX5HH9QIRJXacKKly7Do",
@@ -1388,8 +1392,7 @@ function spinWheelToWinner(winnerName) {
 
 </script>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js">
+
 // === Overlay Winner Spin ===
 function spinWheelToWinner(winnerName) {
     if (!participants.length) return;
@@ -1431,8 +1434,7 @@ function spinWheelToWinner(winnerName) {
     requestAnimationFrame(animateSpin);
 }
 
-</script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js">
+
 // === Overlay Winner Spin ===
 function spinWheelToWinner(winnerName) {
     if (!participants.length) return;
