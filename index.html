@@ -319,7 +319,7 @@
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-weight: 500;
+            font-weight: ;
         }
 
         .status-connected { color: var(--success-color); }
@@ -358,7 +358,7 @@
             padding: 15px 20px;
             border-radius: 10px;
             font-weight: bold;
-            z-index: 1500;
+            z-index: 1;
             animation: slideIn 0.3s ease-out;
             box-shadow: 0 4px 15px var(--shadow-color);
         }
@@ -618,7 +618,7 @@
                 gainNode.connect(audioContext.destination);
                 
                 // Tick sound with higher frequency for clicking effect
-                oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
                 oscillator.type = 'sine';
                 
                 // 80% of original volume (was 0.1, now 0.08)
