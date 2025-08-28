@@ -1151,10 +1151,6 @@
             }
         }
 
-          function connectToTwitchOverlay() {
-            connectToTwitch();
-            }
-
         function disconnectFromTwitch() {
             if (twitchSocket) {
                 twitchSocket.close();
@@ -1214,6 +1210,10 @@
                 }
             }
         }
+
+         function connectToTwitchOverlay() {
+            connectToTwitch();
+            }
 
         function handleChatEntry(username) {
             // Check cooldown (prevent spam entries)
