@@ -92,8 +92,8 @@
 
         .sound-toggle {
             position: fixed;
-            top: 20px;
-            right: 180px;
+            top: 80px;
+            right: 20px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
@@ -766,9 +766,9 @@
             
             // Draw pointer
             ctx.beginPath();
-            ctx.moveTo(centerX + radius + 15, centerY);
-            ctx.lineTo(centerX + radius - 25, centerY - 20);
-            ctx.lineTo(centerX + radius - 25, centerY + 20);
+            ctx.moveTo(centerX + radius + 25, centerY);
+            ctx.lineTo(centerX + radius - 15, centerY - 15);
+            ctx.lineTo(centerX + radius - 15, centerY + 15);
             ctx.fillStyle = '#9146ff';
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
@@ -898,10 +898,9 @@
             const startRotation = currentRotation;
             const startTime = Date.now();
             
-            // Variables for tick sound timing
-            let lastTickTime = 0;
-            const minTickInterval = 50; // Minimum time between ticks in ms
-            let currentTickInterval = minTickInterval;
+            // Variables for segment-based tick sound
+            const anglePerSegment = (2 * Math.PI) / participants.length;
+            let lastSegmentIndex = -1;
             
             function animate() {
                 const elapsed = Date.now() - startTime;
@@ -909,24 +908,17 @@
                 
                 // Smooth easing function
                 const easeOut = 1 - Math.pow(1 - progress, 4);
-                const oldRotation = currentRotation;
                 currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
                 
-                // Calculate rotation speed for tick timing
-                const rotationDelta = Math.abs(currentRotation - oldRotation);
-                const now = Date.now();
+                // Calculate which segment the pointer is currently over
+                const normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
+                const currentSegmentIndex = Math.floor(normalizedRotation / anglePerSegment);
                 
-                // Play tick sound based on rotation speed
-                if (soundsEnabled && rotationDelta > 0.05) { // Only tick if moving significantly
-                    // Adjust tick interval based on speed (faster = more frequent ticks)
-                    const speed = rotationDelta / 16.67; // Normalize to ~60fps
-                    currentTickInterval = Math.max(minTickInterval, 200 / Math.max(speed, 1));
-                    
-                    if (now - lastTickTime > currentTickInterval) {
-                        playTickSound();
-                        lastTickTime = now;
-                    }
+                // Play tick sound when crossing into a new segment
+                if (soundsEnabled && currentSegmentIndex !== lastSegmentIndex && lastSegmentIndex !== -1) {
+                    playTickSound();
                 }
+                lastSegmentIndex = currentSegmentIndex;
                 
                 drawWheel();
                 
@@ -934,8 +926,6 @@
                     requestAnimationFrame(animate);
                 } else {
                     // Determine winner
-                    const normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
-                    const anglePerSegment = (2 * Math.PI) / participants.length;
                     const winnerIndex = Math.floor(normalizedRotation / anglePerSegment);
                     const winner = participants[winnerIndex];
                     
@@ -947,7 +937,7 @@
                     
                     isSpinning = false;
                     document.getElementById('spinBtn').disabled = false;
-                    document.getElementById('statusText').textContent = `🎉 Winner: ${winner}`;
+                    document.getElementById('statusText').textContent = `Winner: ${winner}`;
                 }
             }
             
