@@ -798,11 +798,11 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer (at top pointing down toward center)
+            // Draw pointer (at right pointing towards center)
             ctx.beginPath();
-            ctx.moveTo(centerX, centerY - radius - 15);
-            ctx.lineTo(centerX - 12, centerY - radius + 5);
-            ctx.lineTo(centerX + 12, centerY - radius + 5);
+            ctx.moveTo(centerX + radius - 18, centerY);
+            ctx.lineTo(centerX + radius + 15, centerY - 12);
+            ctx.lineTo(centerX + radius + 15, centerY + 12);
             ctx.fillStyle = '#9146ff';
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
