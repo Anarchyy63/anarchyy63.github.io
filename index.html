@@ -484,6 +484,14 @@
             });
         }
         
+        function updateConnectionStatus(status, type) {
+            const statusElement = document.getElementById('chatStatus');
+            statusElement.textContent = status;
+            statusElement.style.color = type === 'success' ? '#4ecdc4' : 
+                                      type === 'error' ? '#ff6b6b' : 
+                                      type === 'warning' ? '#ffd93d' : '#fff';
+        }
+        
         function connectToTwitch() {
             const channel = document.getElementById('channelInput').value.trim().toLowerCase();
             let token = document.getElementById('tokenInput').value.trim();
