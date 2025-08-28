@@ -230,7 +230,10 @@
                 <input type="text" id="channelInput" placeholder="Enter Twitch channel name" style="width: 100%; margin-bottom: 10px;">
                 <input type="text" id="keywordInput" placeholder="Chat keyword (e.g., !enter)" value="!enter" style="width: 100%; margin-bottom: 10px;">
                 <input type="text" id="tokenInput" placeholder="OAuth token (oauth:xxxxx)" style="width: 100%; margin-bottom: 10px;">
-                <button onclick="extractTokenFromURL()" class="control-btn" style="font-size: 14px; padding: 8px 15px;">🔍 Extract Token from URL</button>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button onclick="extractTokenFromURL()" class="control-btn" style="font-size: 14px; padding: 8px 15px;">🔍 Extract Token from URL</button>
+                    <button onclick="generateToken()" class="control-btn" style="font-size: 14px; padding: 8px 15px;">🔑 Get New Token</button>
+                </div>
                 <button onclick="connectToTwitch()" id="connectBtn" class="control-btn">🔗 Connect to Twitch Chat</button>
                 <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
                     Chat Status: <span id="chatStatus">Disconnected</span>
@@ -647,6 +650,14 @@
                     document.body.removeChild(notification);
                 }
             }, 3000);
+        }
+        
+        function generateToken() {
+            const currentUrl = window.location.origin + window.location.pathname;
+            const clientId = 'kveb0wkhdo0uk1ysf3ctzbz3kufhpq'; // Your client ID
+            const oauthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=${clientId}&redirect_uri=${encodeURIComponent(currentUrl)}&scope=chat:read&state=token_gen`;
+            
+            window.location.href = oauthUrl;
         }
         
         function extractTokenFromURL() {
