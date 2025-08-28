@@ -203,7 +203,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: ;
             transition: all 0.3s ease;
             border: 1px solid transparent;
         }
@@ -618,8 +618,8 @@
                 gainNode.connect(audioContext.destination);
                 
                 // Tick sound with higher frequency for clicking effect
-                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.type = 'square';
                 
                 // 80% of original volume (was 0.1, now 0.08)
                 gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
