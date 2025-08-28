@@ -1094,6 +1094,10 @@
             
             updateConnectionStatus('Connecting...', 'warning');
             document.getElementById('connectBtn').disabled = true;
+
+            function connectToTwitchOverlay() {
+            connectToTwitch();
+            }
             
             // Disconnect existing connection
             if (twitchSocket) {
