@@ -617,8 +617,8 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                // Tick sound at 80% original volume
-                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                // Tick sound with higher frequency for clicking effect
+                oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
                 oscillator.type = 'sine';
                 
                 // 80% of original volume (was 0.1, now 0.08)
@@ -782,11 +782,11 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer (on right side pointing toward center)
+            // Draw pointer (on right side pointing toward wheel center)
             ctx.beginPath();
             ctx.moveTo(centerX + radius + 15, centerY);
-            ctx.lineTo(centerX + radius - 10, centerY - 15);
-            ctx.lineTo(centerX + radius - 10, centerY + 15);
+            ctx.lineTo(centerX + radius - 5, centerY - 12);
+            ctx.lineTo(centerX + radius - 5, centerY + 12);
             ctx.fillStyle = '#9146ff';
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
