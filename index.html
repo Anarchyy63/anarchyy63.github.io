@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Wheel Giveaway</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            align-items: start;
+        }
+        
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        #wheelCanvas {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+            background: white;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 15px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .spin-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            font-size: 24px;
+            padding: 20px 40px;
+        }
+        
+        .spin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+        
+        .spin-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+        
+        .danger-btn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        
+        .danger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+        
+        input {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        
+        .participants-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .participants-list h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .participant-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .winner-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: winnerPop 0.6s ease-out;
+        }
+        
+        @keyframes winnerPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            80% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .status-bar {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            #wheelCanvas {
+                width: 300px;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Twitch Wheel Giveaway</h1>
+    
+    <div class="container">
+        <div class="wheel-section">
+            <canvas id="wheelCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button id="spinBtn" class="spin-btn">🎲 SPIN THE WHEEL!</button>
+                <div class="status-bar">
+                    <div id="statusText">Add participants to get started!</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-section">
+            <h2>🎮 Streamer Controls</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="usernameInput" placeholder="Enter username manually" style="width: 100%; margin-bottom: 10px;">
+                <button onclick="addParticipant()" class="control-btn">➕ Add Participant</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="keywordInput" placeholder="Chat keyword (e.g., !enter)" value="!enter" style="width: 100%; margin-bottom: 10px;">
+                <button onclick="toggleChatMode()" id="chatModeBtn" class="control-btn">🚀 Start Chat Mode</button>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
+                    Chat Mode: <span id="chatStatus">Disabled</span>
+                </div>
+            </div>
+            
+            <button onclick="clearWheel()" class="danger-btn">🗑️ Clear All</button>
+            <button onclick="removeWinner()" class="control-btn">❌ Remove Last Winner</button>
+            
+            <div class="participants-list">
+                <h3>👥 Participants (<span id="participantCount">0</span>)</h3>
+                <div id="participantsList"></div>
+            </div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <h3>💡 How to use with Twitch:</h3>
+                <div style="font-size: 14px; line-height: 1.6;">
+                    1. Set your keyword above<br>
+                    2. Enable "Chat Mode"<br>
+                    3. Viewers type the keyword in chat<br>
+                    4. Their usernames auto-add to wheel<br>
+                    5. Spin when ready!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Wheel setup
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 180;
+        
+        let participants = [];
+        let isSpinning = false;
+        let currentRotation = 0;
+        let chatModeEnabled = false;
+        let lastWinner = null;
+        
+        // Color palette for wheel segments
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
+            '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
+            '#10AC84', '#EE5A24', '#0084FF', '#B33771', '#FD79A8'
+        ];
+        
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (participants.length === 0) {
+                // Draw empty wheel
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fill();
+                ctx.strokeStyle = '#ddd';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Empty wheel text
+                ctx.fillStyle = '#999';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Add participants', centerX, centerY - 10);
+                ctx.fillText('to start!', centerX, centerY + 20);
+                return;
+            }
+            
+            const anglePerSegment = (2 * Math.PI) / participants.length;
+            
+            for (let i = 0; i < participants.length; i++) {
+                const startAngle = i * anglePerSegment + currentRotation;
+                const endAngle = (i + 1) * anglePerSegment + currentRotation;
+                
+                // Draw segment
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.lineTo(centerX, centerY);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw text
+                const textAngle = startAngle + anglePerSegment / 2;
+                const textX = centerX + Math.cos(textAngle) * (radius * 0.7);
+                const textY = centerY + Math.sin(textAngle) * (radius * 0.7);
+                
+                ctx.save();
+                ctx.translate(textX, textY);
+                ctx.rotate(textAngle + Math.PI / 2);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(participants[i], 0, 0);
+                ctx.restore();
+            }
+            
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            
+            // Draw pointer
+            ctx.beginPath();
+            ctx.moveTo(centerX + radius + 10, centerY);
+            ctx.lineTo(centerX + radius - 20, centerY - 15);
+            ctx.lineTo(centerX + radius - 20, centerY + 15);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+        }
+        
+        function spinWheel() {
+            if (participants.length === 0) {
+                alert('Add some participants first!');
+                return;
+            }
+            
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('statusText').textContent = 'Spinning...';
+            
+            const spinDuration = 3000;
+            const spinAmount = Math.random() * 6 + 10; // 10-16 full rotations
+            const startRotation = currentRotation;
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                
+                // Easing function for realistic spin
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
+                
+                drawWheel();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Determine winner
+                    const normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
+                    const anglePerSegment = (2 * Math.PI) / participants.length;
+                    const winnerIndex = Math.floor(normalizedRotation / anglePerSegment);
+                    const winner = participants[winnerIndex];
+                    
+                    lastWinner = winner;
+                    showWinner(winner);
+                    
+                    isSpinning = false;
+                    document.getElementById('spinBtn').disabled = false;
+                    document.getElementById('statusText').textContent = `🎉 Winner: ${winner}`;
+                }
+            }
+            
+            animate();
+        }
+        
+        function showWinner(winner) {
+            const announcement = document.createElement('div');
+            announcement.className = 'winner-announcement';
+            announcement.innerHTML = `🎉 WINNER: ${winner}! 🎉`;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 4000);
+        }
+        
+        function addParticipant(username) {
+            if (!username) {
+                username = document.getElementById('usernameInput').value.trim();
+            }
+            
+            if (username && !participants.includes(username)) {
+                participants.push(username);
+                updateParticipantsList();
+                drawWheel();
+                document.getElementById('usernameInput').value = '';
+                document.getElementById('statusText').textContent = `${participants.length} participants ready!`;
+            }
+        }
+        
+        function removeParticipant(username) {
+            const index = participants.indexOf(username);
+            if (index > -1) {
+                participants.splice(index, 1);
+                updateParticipantsList();
+                drawWheel();
+                
+                if (participants.length === 0) {
+                    document.getElementById('statusText').textContent = 'Add participants to get started!';
+                } else {
+                    document.getElementById('statusText').textContent = `${participants.length} participants ready!`;
+                }
+            }
+        }
+        
+        function removeWinner() {
+            if (lastWinner) {
+                removeParticipant(lastWinner);
+                lastWinner = null;
+                document.getElementById('statusText').textContent = 'Winner removed!';
+            }
+        }
+        
+        function clearWheel() {
+            if (confirm('Remove all participants?')) {
+                participants = [];
+                lastWinner = null;
+                updateParticipantsList();
+                drawWheel();
+                document.getElementById('statusText').textContent = 'Wheel cleared!';
+            }
+        }
+        
+        function updateParticipantsList() {
+            const list = document.getElementById('participantsList');
+            const count = document.getElementById('participantCount');
+            
+            count.textContent = participants.length;
+            list.innerHTML = '';
+            
+            participants.forEach(participant => {
+                const item = document.createElement('div');
+                item.className = 'participant-item';
+                item.innerHTML = `
+                    <span>${participant}</span>
+                    <button class="remove-btn" onclick="removeParticipant('${participant}')">×</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        function toggleChatMode() {
+            chatModeEnabled = !chatModeEnabled;
+            const btn = document.getElementById('chatModeBtn');
+            const status = document.getElementById('chatStatus');
+            
+            if (chatModeEnabled) {
+                btn.textContent = '⏸️ Stop Chat Mode';
+                btn.style.background = 'linear-gradient(45deg, #ff416c, #ff4b2b)';
+                status.textContent = 'Active (Simulated)';
+                simulateChat();
+            } else {
+                btn.textContent = '🚀 Start Chat Mode';
+                btn.style.background = 'linear-gradient(45deg, #4ecdc4, #44a08d)';
+                status.textContent = 'Disabled';
+            }
+        }
+        
+        // Simulate chat entries for demo (replace with real Twitch integration)
+        function simulateChat() {
+            if (!chatModeEnabled) return;
+            
+            const demoUsernames = ['StreamerFan123', 'GamerGirl99', 'ProPlayer2024', 'ChatMaster', 'LuckyViewer', 'WheelSpinner', 'TwitchLover', 'RandomUser42'];
+            const keyword = document.getElementById('keywordInput').value;
+            
+            setTimeout(() => {
+                if (chatModeEnabled) {
+                    const randomUser = demoUsernames[Math.floor(Math.random() * demoUsernames.length)];
+                    console.log(`Simulated chat: ${randomUser}: ${keyword}`);
+                    addParticipant(randomUser);
+                    simulateChat();
+                }
+            }, Math.random() * 3000 + 1000); // Random delay between 1-4 seconds
+        }
+        
+        // Event listeners
+        document.getElementById('spinBtn').onclick = spinWheel;
+        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addParticipant();
+            }
+        });
+        
+        // Initialize
+        drawWheel();
+        updateParticipantsList();
+    </script>
+</body>
+</html>
