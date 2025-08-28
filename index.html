@@ -617,12 +617,12 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                // Create a much softer tick sound
+                // Softer tick sound - 50% quieter than original
                 oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
                 oscillator.type = 'sine';
                 
-                // Much quieter volume
-                gainNode.gain.setValueAtTime(0.005, audioContext.currentTime);
+                // Increased volume to 50% of original (0.005 -> 0.015)
+                gainNode.gain.setValueAtTime(0.015, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
                 
                 oscillator.start(audioContext.currentTime);
@@ -782,11 +782,11 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer (pointing inward from left side)
+            // Draw pointer (back to right side)
             ctx.beginPath();
-            ctx.moveTo(centerX - radius - 15, centerY);
-            ctx.lineTo(centerX - radius + 10, centerY - 15);
-            ctx.lineTo(centerX - radius + 10, centerY + 15);
+            ctx.moveTo(centerX + radius + 15, centerY);
+            ctx.lineTo(centerX + radius - 10, centerY - 15);
+            ctx.lineTo(centerX + radius - 10, centerY + 15);
             ctx.fillStyle = '#9146ff';
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
