@@ -920,7 +920,6 @@
                 alert('Add some participants first!');
                 return;
             
-    db.ref(\"winner\").set({ name: winner, timestamp: Date.now() });
 }
             
             if (isSpinning) return;
@@ -967,6 +966,8 @@
                     
                     lastWinner = winner;
                     showWinner(winner);
+
+                    db.ref("winner").set({ name: winner, timestamp: Date.now() });
                     
                     // Play congratulations sound
                     setTimeout(() => playCongratsSound(), 500);
