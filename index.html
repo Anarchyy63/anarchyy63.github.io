@@ -967,6 +967,9 @@
                     lastWinner = winner;
                     showWinner(winner);
 
+            // 🔥 Sync winner to Firebase
+            db.ref("winner").set({ name: winner, timestamp: Date.now() });
+
                     db.ref("winner").set({ name: winner, timestamp: Date.now() });
                     
                     // Play congratulations sound
@@ -1347,92 +1350,6 @@
                 drawWheel();
             });
         }
-
-
-// === Overlay Winner Spin ===
-function spinWheelToWinner(winnerName) {
-    if (!participants.length) return;
-
-    // Find index of winner
-    const winnerIndex = participants.indexOf(winnerName);
-    if (winnerIndex === -1) {
-        console.warn("Winner not in participants list:", winnerName);
-        return;
-    }
-
-    // Calculate slice angle
-    const sliceAngle = 2 * Math.PI / participants.length;
-    const randomOffset = Math.random() * sliceAngle; // to avoid exact edges
-    const targetAngle = (participants.length - winnerIndex - 0.5) * sliceAngle + randomOffset;
-
-    // Total spin: multiple rotations + target
-    const rotations = 6; // number of full spins
-    const spinAngle = rotations * 2 * Math.PI + targetAngle;
-
-    let start = null;
-    const duration = 6000; // 6 seconds
-    const initialRotation = currentRotation || 0;
-
-    function animateSpin(timestamp) {
-        if (!start) start = timestamp;
-        const progress = (timestamp - start) / duration;
-        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-        currentRotation = initialRotation + eased * spinAngle;
-        drawWheel();
-
-        if (progress < 1) {
-            requestAnimationFrame(animateSpin);
-        } else {
-            console.log("✅ Overlay wheel stopped on winner:", winnerName);
-        }
-    }
-
-    requestAnimationFrame(animateSpin);
-}
-
-</script>
-
-
-// === Overlay Winner Spin ===
-function spinWheelToWinner(winnerName) {
-    if (!participants.length) return;
-
-    // Find index of winner
-    const winnerIndex = participants.indexOf(winnerName);
-    if (winnerIndex === -1) {
-        console.warn("Winner not in participants list:", winnerName);
-        return;
-    }
-
-    // Calculate slice angle
-    const sliceAngle = 2 * Math.PI / participants.length;
-    const randomOffset = Math.random() * sliceAngle; // to avoid exact edges
-    const targetAngle = (participants.length - winnerIndex - 0.5) * sliceAngle + randomOffset;
-
-    // Total spin: multiple rotations + target
-    const rotations = 6; // number of full spins
-    const spinAngle = rotations * 2 * Math.PI + targetAngle;
-
-    let start = null;
-    const duration = 6000; // 6 seconds
-    const initialRotation = currentRotation || 0;
-
-    function animateSpin(timestamp) {
-        if (!start) start = timestamp;
-        const progress = (timestamp - start) / duration;
-        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-        currentRotation = initialRotation + eased * spinAngle;
-        drawWheel();
-
-        if (progress < 1) {
-            requestAnimationFrame(animateSpin);
-        } else {
-            console.log("✅ Overlay wheel stopped on winner:", winnerName);
-        }
-    }
-
-    requestAnimationFrame(animateSpin);
-}
 
 
 // === Overlay Winner Spin ===
