@@ -489,6 +489,8 @@
             const token = document.getElementById('tokenInput').value.trim();
             const keyword = document.getElementById('keywordInput').value.trim();
             
+            console.log('Attempting connection with:', { channel, keyword, tokenLength: token.length });
+            
             if (!channel || !token || !keyword) {
                 alert('Please fill in all fields: Channel name, OAuth token, and keyword');
                 return;
@@ -496,51 +498,67 @@
             
             // Validate token format
             if (!token.startsWith('oauth:')) {
-                alert('Token must start with "oauth:" - get your token from the OAuth tester');
+                alert('Token must start with "oauth:" - check your token format');
+                return;
+            }
+            
+            if (token.length < 35) {
+                alert('Token seems too short - make sure you copied the full token');
                 return;
             }
             
             channelName = channel;
             entryKeyword = keyword;
             
+            updateConnectionStatus('Connecting...', 'warning');
+            console.log('Creating WebSocket connection...');
+            
             // Disconnect existing connection
             if (twitchSocket) {
                 twitchSocket.close();
             }
             
-            // Connect to Twitch IRC
-            twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-            
-            twitchSocket.onopen = function() {
-                // Send authentication
-                twitchSocket.send(`PASS ${token}`);
-                twitchSocket.send(`NICK justinfan${Math.floor(Math.random() * 100000)}`);
-                twitchSocket.send(`JOIN #${channelName}`);
+            try {
+                // Connect to Twitch IRC
+                twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
                 
-                updateConnectionStatus('Connected', 'success');
-                document.getElementById('connectBtn').textContent = '🔌 Disconnect';
-                document.getElementById('connectBtn').onclick = disconnectFromTwitch;
+                twitchSocket.onopen = function() {
+                    console.log('WebSocket opened, sending auth...');
+                    // Send authentication
+                    twitchSocket.send(`PASS ${token}`);
+                    twitchSocket.send(`NICK justinfan${Math.floor(Math.random() * 100000)}`);
+                    twitchSocket.send(`JOIN #${channelName}`);
+                    
+                    updateConnectionStatus('Authenticating...', 'warning');
+                    document.getElementById('connectBtn').textContent = '🔌 Disconnect';
+                    document.getElementById('connectBtn').onclick = disconnectFromTwitch;
+                    
+                    console.log(`Sent join command for #${channelName}`);
+                };
                 
-                console.log(`Connected to #${channelName} chat!`);
-            };
-            
-            twitchSocket.onmessage = function(event) {
-                handleTwitchMessage(event.data);
-            };
-            
-            twitchSocket.onclose = function() {
-                updateConnectionStatus('Disconnected', 'error');
-                document.getElementById('connectBtn').textContent = '🔗 Connect to Twitch Chat';
-                document.getElementById('connectBtn').onclick = connectToTwitch;
-                isConnected = false;
-                console.log('Disconnected from Twitch chat');
-            };
-            
-            twitchSocket.onerror = function(error) {
-                console.error('Twitch connection error:', error);
-                updateConnectionStatus('Connection Error', 'error');
-                alert('Failed to connect to Twitch. Check your token and try again.');
-            };
+                twitchSocket.onmessage = function(event) {
+                    console.log('Received message:', event.data);
+                    handleTwitchMessage(event.data);
+                };
+                
+                twitchSocket.onclose = function(event) {
+                    console.log('WebSocket closed:', event.code, event.reason);
+                    updateConnectionStatus('Disconnected', 'error');
+                    document.getElementById('connectBtn').textContent = '🔗 Connect to Twitch Chat';
+                    document.getElementById('connectBtn').onclick = connectToTwitch;
+                    isConnected = false;
+                };
+                
+                twitchSocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateConnectionStatus('Connection Error', 'error');
+                    alert('Failed to connect to Twitch. Check console for details.');
+                };
+                
+            } catch (error) {
+                console.error('Failed to create WebSocket:', error);
+                alert('Connection failed: ' + error.message);
+            }
         }
         
         function disconnectFromTwitch() {
@@ -555,9 +573,12 @@
             const lines = rawMessage.split('\r\n');
             
             for (let line of lines) {
+                console.log('IRC message:', line); // Debug logging
+                
                 if (line.startsWith('PING')) {
                     // Respond to PING to keep connection alive
                     twitchSocket.send('PONG :tmi.twitch.tv');
+                    console.log('Responded to PING');
                     continue;
                 }
                 
@@ -568,6 +589,8 @@
                         const username = match[1];
                         const message = match[2].trim();
                         
+                        console.log(`Chat message from ${username}: ${message}`);
+                        
                         // Check if message contains our entry keyword
                         if (message.toLowerCase() === entryKeyword.toLowerCase()) {
                             handleChatEntry(username);
@@ -575,10 +598,23 @@
                     }
                 }
                 
-                // Confirm we've joined the channel
-                if (line.includes(`366 * #${channelName}`)) {
+                // Confirm we've joined the channel successfully
+                if (line.includes(`366`) && line.includes(`#${channelName}`)) {
                     isConnected = true;
                     updateConnectionStatus(`Connected to #${channelName}`, 'success');
+                    console.log(`✅ Successfully joined #${channelName}`);
+                }
+                
+                // Handle successful connection messages
+                if (line.includes('001') || line.includes('Welcome')) {
+                    console.log('✅ IRC connection established');
+                    updateConnectionStatus('Connected to IRC', 'success');
+                }
+                
+                // Handle join confirmation
+                if (line.includes(`JOIN #${channelName}`)) {
+                    console.log(`✅ Joined channel #${channelName}`);
+                    updateConnectionStatus(`Monitoring #${channelName}`, 'success');
                 }
             }
         }
