@@ -919,8 +919,7 @@
             if (participants.length === 0) {
                 alert('Add some participants first!');
                 return;
-            
-}
+            }
             
             if (isSpinning) return;
             
@@ -966,11 +965,6 @@
                     
                     lastWinner = winner;
                     showWinner(winner);
-
-            // 🔥 Sync winner to Firebase
-            db.ref("winner").set({ name: winner, timestamp: Date.now() });
-
-                    db.ref("winner").set({ name: winner, timestamp: Date.now() });
                     
                     // Play congratulations sound
                     setTimeout(() => playCongratsSound(), 500);
@@ -1018,7 +1012,6 @@
                 participants.splice(index, 1);
                 updateParticipantsList();
                 drawWheel();
-                syncParticipants();
                 
                 if (participants.length === 0) {
                     document.getElementById('statusText').textContent = 'Add participants to get started!';
@@ -1045,7 +1038,6 @@
                 participantCooldown.clear();
                 updateParticipantsList();
                 drawWheel();
-                syncParticipants();
                 document.getElementById('statusText').textContent = 'Wheel cleared!';
                 updateConnectionStatus('Disconnected', 'error');
                 
@@ -1283,7 +1275,6 @@
                 document.body.classList.add('overlay-mode');
                 // In overlay mode, skip auth and show the wheel directly
                 showAppSection();
-                listenForFirebaseUpdates();
                 
                 // Connect to WebSocket for real-time updates if token provided
                 const token = urlParams.get('token');
@@ -1321,75 +1312,6 @@
                 checkForToken();
             }
         });
-
-// <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js"></script>
-
-<script>
-  // === Firebase Setup ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyBMoZoi2v6cT5_tX5HH9QIRJXacKKly7Do",
-    authDomain: "wheel-sync-db.firebaseapp.com",
-    projectId: "wheel-sync-db",
-    storageBucket: "wheel-sync-db.firebasestorage.app",
-    messagingSenderId: "393442110174",
-    appId: "1:393442110174:web:f3fc737d1438bdfb44b04f"
-  };
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // === Firebase Sync Helpers ===
-  function syncParticipants() {
-    db.ref("participants").set(participants);
-  }
-  function listenForFirebaseUpdates() {
-    db.ref("participants").on("value", snapshot => {
-      const data = snapshot.val() || [];
-      participants = data;
-      updateParticipantsList();
-      drawWheel();
-    });
-  }
-
-  // === Overlay Winner Spin ===
-  function spinWheelToWinner(winnerName) {
-    if (!participants.length) return;
-
-    const winnerIndex = participants.indexOf(winnerName);
-    if (winnerIndex === -1) {
-      console.warn("Winner not in participants list:", winnerName);
-      return;
-    }
-
-    const sliceAngle = 2 * Math.PI / participants.length;
-    const randomOffset = Math.random() * sliceAngle;
-    const targetAngle = (participants.length - winnerIndex - 0.5) * sliceAngle + randomOffset;
-
-    const rotations = 6;
-    const spinAngle = rotations * 2 * Math.PI + targetAngle;
-
-    let start = null;
-    const duration = 6000;
-    const initialRotation = currentRotation || 0;
-
-    function animateSpin(timestamp) {
-      if (!start) start = timestamp;
-      const progress = (timestamp - start) / duration;
-      const eased = 1 - Math.pow(1 - progress, 3);
-      currentRotation = initialRotation + eased * spinAngle;
-      drawWheel();
-
-      if (progress < 1) {
-        requestAnimationFrame(animateSpin);
-      } else {
-        console.log("✅ Overlay wheel stopped on winner:", winnerName);
-      }
-    }
-
-    requestAnimationFrame(animateSpin);
-  }
-</script>
-
+    </script>
 </body>
 </html>
