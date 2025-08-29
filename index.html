@@ -463,14 +463,7 @@
         .crop-mode .controls-section {
             display: none !important;
         }
-    
-/* Always transparent wheel overlay */
-#wheelContainer, 
-#wheelCanvas {
-    background: transparent !important;
-}
-
-</style>
+    </style>
 </head>
 <body data-theme="dark">
     <button class="sound-toggle" id="soundToggleBtn">
@@ -481,7 +474,90 @@
         🌙 Dark Mode
     </button>
 
-    
+    <div class="header">
+        <h1>🎯 Twitch Wheel Giveaway</h1>
+        <p class="subtitle">Professional giveaway tool for Twitch streamers</p>
+    </div>
+
+    <!-- Authentication Section -->
+    <div id="authSection" class="container">
+        <div class="auth-section" style="grid-column: 1 / -1; text-align: center;">
+            <h2>Sign in with Twitch to get started</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">
+                Connect your Twitch account to start running giveaways in your chat
+            </p>
+            <button class="twitch-login-btn" id="twitchLoginBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                </svg>
+                Sign in with Twitch
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="appSection" class="container" style="display: none;">
+        <div class="wheel-section">
+            <canvas id="wheelCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button id="spinBtn" class="spin-btn">🎲 SPIN THE WHEEL!</button>
+                <div class="status-bar">
+                    <div id="statusText">Add participants to get started!</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-section">
+            <div id="userInfo" class="user-info">
+                <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                <div>
+                    <div id="userName" style="font-weight: bold;"></div>
+                    <div id="userLogin" style="color: var(--text-secondary); font-size: 14px;"></div>
+                </div>
+                <button id="logoutBtn" class="secondary-btn" style="margin-left: auto; padding: 8px 12px; font-size: 14px;">Logout</button>
+            </div>
+
+            <h3>🎮 Giveaway Settings</h3>
+            
+            <input type="text" id="keywordInput" placeholder="Entry keyword (e.g., !enter)" value="!enter">
+            
+            <button id="connectBtn" class="primary-btn">🔗 Connect to Chat</button>
+            <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
+                Status: <span id="chatStatus">Disconnected</span>
+            </div>
+
+            <div style="margin-top: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
+                <strong>Chat Commands:</strong><br>
+                <span style="color: var(--text-secondary);">!spin - Mods only: spin the wheel</span>
+            </div>
+
+            <h3 style="margin-top: 30px;">⚙️ Manual Controls</h3>
+            
+            <input type="text" id="usernameInput" placeholder="Add username manually">
+            <button id="addParticipantBtn" class="secondary-btn">➕ Add Participant</button>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">🗑️ Clear All</button>
+                <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">❌ Remove Winner</button>
+            </div>
+
+            <div class="participants-list">
+                <h4 style="margin-top: 0;">👥 Participants (<span id="participantCount">0</span>)</h4>
+                <div id="participantsList"></div>
+            </div>
+
+            <div class="help-section">
+                <h3>💡 How to Use</h3>
+                <p><strong>1.</strong> Set your entry keyword</p>
+                <p><strong>2.</strong> Click "Connect to Chat"</p>
+                <p><strong>3.</strong> Tell viewers to type the keyword</p>
+                <p><strong>4.</strong> Mods can type !spin to spin</p>
+                <p><strong>5.</strong> Or click the spin button manually!</p>
+                
+                <h4>OBS Setup:</h4>
+                <p>Add <strong>?transparent=true</strong> to URL for transparent background</p>
+                <p>Add <strong>?crop=true</strong> to URL for easy cropping</p>
+            </div>
         </div>
     </div>
 
