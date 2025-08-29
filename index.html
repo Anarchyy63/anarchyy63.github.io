@@ -1178,19 +1178,16 @@
 
         console.log('IRC:', line);
 
-        // Respond to PING
         if (line.startsWith('PING')) {
             twitchSocket.send('PONG :tmi.twitch.tv\r\n');
             continue;
         }
 
-        // Successful login
         if (line.includes('001') || line.includes('Welcome')) {
             console.log('✅ Successfully authenticated with Twitch IRC');
             updateConnectionStatus('Authenticated', 'warning');
         }
 
-        // Successful join
         if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
             isConnected = true;
             updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
@@ -1200,41 +1197,42 @@
             console.log(`✅ Successfully joined #${userInfo.login}`);
         }
 
-        // Parse chat messages with user badges/tags
+        // --- Chat messages ---
         if (line.includes('PRIVMSG')) {
-            let username, message, isModerator = false, isBroadcaster = false;
+            let username, message;
+            let isModerator = false, isBroadcaster = false;
 
+            // Tags
+            let tags = {};
             if (line.startsWith('@')) {
-                const tagMatch = line.match(/^@([^:]+)\s*:(.+)$/);
-                if (tagMatch) {
-                    const tags = tagMatch[1];
-                    const rest = tagMatch[2];
-
-                    if (tags.includes('badges=')) {
-                        const badgesMatch = tags.match(/badges=([^;]*)/);
-                        if (badgesMatch) {
-                            const badges = badgesMatch[1];
-                            isModerator = badges.includes('moderator') || badges.includes('broadcaster');
-                            isBroadcaster = badges.includes('broadcaster');
-                        }
-                    }
-
-                    const msgMatch = rest.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                    if (msgMatch) {
-                        username = msgMatch[1];
-                        message = msgMatch[2].trim();
-                    }
-                }
-            } else {
-                const match = line.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                if (match) {
-                    username = match[1];
-                    message = match[2].trim();
-                    isBroadcaster = username.toLowerCase() === userInfo.login.toLowerCase();
-                    isModerator = isBroadcaster;
-                }
+                const [tagSection, ...restArr] = line.split(' ');
+                tagSection.slice(1).split(';').forEach(pair => {
+                    const [k, v] = pair.split('=');
+                    tags[k] = v;
+                });
             }
 
+            // Username + message
+            const msgMatch = line.match(/:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #[^ ]+ :(.*)/);
+            if (msgMatch) {
+                username = msgMatch[1];
+                message = msgMatch[2].trim();
+            }
+
+            // Role checks
+            if (tags.badges) {
+                isModerator = tags.badges.includes('moderator') || tags.badges.includes('broadcaster');
+                isBroadcaster = tags.badges.includes('broadcaster');
+            }
+            if (username && username.toLowerCase() === userInfo.login.toLowerCase()) {
+                isBroadcaster = true;
+                isModerator = true;
+            }
+            if (tags.mod === '1') {
+                isModerator = true;
+            }
+
+            // Commands
             if (username && message) {
                 console.log(`Chat: ${username}: ${message} (mod:${isModerator}, bc:${isBroadcaster})`);
 
@@ -1259,9 +1257,9 @@
                     }, 3000);
                 }
             }
-        }
-    }
-}
+        } // closes PRIVMSG
+    } // closes for loop
+} // closes function
                 
                 if (line.includes('001') || line.includes('Welcome')) {
                     console.log('✅ Successfully authenticated with Twitch IRC');
