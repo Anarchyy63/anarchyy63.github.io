@@ -6,7 +6,6 @@
     <title>Twitch Wheel Giveaway</title>
     <style>
         :root {
-            /* Dark Theme (default) */
             --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             --bg-secondary: rgba(255, 255, 255, 0.05);
             --bg-tertiary: rgba(255, 255, 255, 0.1);
@@ -22,7 +21,6 @@
         }
 
         [data-theme="light"] {
-            /* Light Theme */
             --bg-primary: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             --bg-secondary: rgba(0, 0, 0, 0.05);
             --bg-tertiary: rgba(0, 0, 0, 0.1);
@@ -37,9 +35,7 @@
             --shadow-color: rgba(0, 0, 0, 0.1);
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -70,9 +66,8 @@
             font-size: 1.1rem;
         }
 
-        .theme-toggle {
+        .theme-toggle, .sound-toggle, .settings-toggle {
             position: fixed;
-            top: 20px;
             right: 20px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -85,27 +80,11 @@
             z-index: 1000;
         }
 
-        .theme-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px var(--shadow-color);
-        }
+        .theme-toggle { top: 20px; }
+        .sound-toggle { top: 80px; }
+        .settings-toggle { top: 140px; }
 
-        .sound-toggle {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 10px 15px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .sound-toggle:hover {
+        .theme-toggle:hover, .sound-toggle:hover, .settings-toggle:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px var(--shadow-color);
         }
@@ -388,6 +367,110 @@
             margin-bottom: 10px;
         }
 
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px var(--shadow-color);
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .settings-close {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .settings-section h4 {
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .setting-label {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .weight-input {
+            width: 60px;
+            padding: 5px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
@@ -402,52 +485,34 @@
             .header h1 {
                 font-size: 2rem;
             }
-            
-            .theme-toggle {
-                position: relative;
-                top: auto;
-                right: auto;
-                margin-bottom: 20px;
-            }
         }
     </style>
 </head>
 <body data-theme="dark">
-    <button class="sound-toggle" id="soundToggleBtn">
-        🔊 Sound On
-    </button>
-    
-    <button class="theme-toggle" id="themeToggleBtn">
-        🌙 Dark Mode
-    </button>
+    <button class="settings-toggle" id="settingsToggleBtn">⚙️ Settings</button>
+    <button class="sound-toggle" id="soundToggleBtn">🔊 Sound On</button>
+    <button class="theme-toggle" id="themeToggleBtn">🌙 Dark Mode</button>
 
     <div class="header">
-        <h1>🎯 Twitch Wheel Giveaway</h1>
+        <h1>Twitch Wheel Giveaway</h1>
         <p class="subtitle">Professional giveaway tool for Twitch streamers</p>
     </div>
 
-    <!-- Authentication Section -->
     <div id="authSection" class="container">
         <div class="auth-section" style="grid-column: 1 / -1; text-align: center;">
             <h2>Sign in with Twitch to get started</h2>
             <p style="color: var(--text-secondary); margin-bottom: 30px;">
                 Connect your Twitch account to start running giveaways in your chat
             </p>
-            <button class="twitch-login-btn" id="twitchLoginBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-                </svg>
-                Sign in with Twitch
-            </button>
+            <button class="twitch-login-btn" id="twitchLoginBtn">Sign in with Twitch</button>
         </div>
     </div>
 
-    <!-- Main App Section -->
     <div id="appSection" class="container" style="display: none;">
         <div class="wheel-section">
             <canvas id="wheelCanvas" width="400" height="400"></canvas>
             <div class="controls">
-                <button id="spinBtn" class="spin-btn">🎲 SPIN THE WHEEL!</button>
+                <button id="spinBtn" class="spin-btn">SPIN THE WHEEL!</button>
                 <div class="status-bar">
                     <div id="statusText">Add participants to get started!</div>
                 </div>
@@ -464,11 +529,11 @@
                 <button id="logoutBtn" class="secondary-btn" style="margin-left: auto; padding: 8px 12px; font-size: 14px;">Logout</button>
             </div>
 
-            <h3>🎮 Giveaway Settings</h3>
+            <h3>Giveaway Settings</h3>
             
             <input type="text" id="keywordInput" placeholder="Entry keyword (e.g., !enter)" value="!enter">
             
-            <button id="connectBtn" class="primary-btn">🔗 Connect to Chat</button>
+            <button id="connectBtn" class="primary-btn">Connect to Chat</button>
             <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
                 Status: <span id="chatStatus">Disconnected</span>
             </div>
@@ -478,23 +543,23 @@
                 <span style="color: var(--text-secondary);">!spin - Mods only: spin the wheel</span>
             </div>
 
-            <h3 style="margin-top: 30px;">⚙️ Manual Controls</h3>
+            <h3 style="margin-top: 30px;">Manual Controls</h3>
             
             <input type="text" id="usernameInput" placeholder="Add username manually">
-            <button id="addParticipantBtn" class="secondary-btn">➕ Add Participant</button>
+            <button id="addParticipantBtn" class="secondary-btn">Add Participant</button>
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">🗑️ Clear All</button>
-                <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">❌ Remove Winner</button>
+                <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">Clear All</button>
+                <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">Remove Winner</button>
             </div>
 
             <div class="participants-list">
-                <h4 style="margin-top: 0;">👥 Participants (<span id="participantCount">0</span>)</h4>
+                <h4 style="margin-top: 0;">Participants (<span id="participantCount">0</span>)</h4>
                 <div id="participantsList"></div>
             </div>
 
             <div class="help-section">
-                <h3>💡 How to Use</h3>
+                <h3>How to Use</h3>
                 <p><strong>1.</strong> Set your entry keyword</p>
                 <p><strong>2.</strong> Click "Connect to Chat"</p>
                 <p><strong>3.</strong> Tell viewers to type the keyword</p>
@@ -504,58 +569,314 @@
         </div>
     </div>
 
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Wheel Settings</h3>
+                <button class="settings-close" id="settingsCloseBtn">×</button>
+            </div>
+            
+            <div class="settings-section">
+                <h4>General Settings</h4>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong>Allow Multiple Entries</strong><br>
+                        <small style="color: var(--text-secondary);">Let users enter multiple times</small>
+                    </div>
+                    <div class="setting-control">
+                        <input type="checkbox" id="allowMultipleEntries" class="checkbox">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong>Entry Cooldown (seconds)</strong><br>
+                        <small style="color: var(--text-secondary);">Time between entries from same user</small>
+                    </div>
+                    <div class="setting-control">
+                        <input type="number" id="entryCooldown" class="weight-input" value="5" min="0" max="300">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Wheel Colors</h4>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong>Use Custom Colors</strong><br>
+                        <small style="color: var(--text-secondary);">Override default color scheme</small>
+                    </div>
+                    <div class="setting-control">
+                        <input type="checkbox" id="useCustomColors" class="checkbox">
+                    </div>
+                </div>
+                <div id="colorSettings" style="display: none;">
+                    <div class="setting-item">
+                        <div class="setting-label">Custom Color Palette</div>
+                        <div class="setting-control">
+                            <button id="addColorBtn" class="secondary-btn" style="padding: 5px 10px; font-size: 14px;">Add Color</button>
+                        </div>
+                    </div>
+                    <div id="colorList"></div>
+                </div>
+            </div>
+
+            <div class="settings-section" id="participantWeights" style="display: none;">
+                <h4>Participant Weights</h4>
+                <div style="margin-bottom: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
+                    <strong>Note:</strong> Higher weights = higher chance of winning. Default weight is 1.
+                </div>
+                <div id="weightsList"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="resetSettingsBtn" class="danger-btn" style="margin-right: 10px;">Reset to Defaults</button>
+                <button id="saveSettingsBtn" class="primary-btn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Global variables
-        let participants = [];
-        let isSpinning = false;
-        let currentRotation = 0;
-        let twitchSocket = null;
-        let isConnected = false;
-        let lastWinner = null;
-        let entryKeyword = '!enter';
-        let participantCooldown = new Map();
-        let accessToken = null;
-        let userInfo = null;
-        let moderators = new Set();
-        
-        // Audio variables
-        let audioContext = null;
-        let soundsEnabled = true;
-        let currentTickOscillator = null;
+        var participants = [];
+        var isSpinning = false;
+        var currentRotation = 0;
+        var twitchSocket = null;
+        var isConnected = false;
+        var lastWinner = null;
+        var entryKeyword = '!enter';
+        var participantCooldown = new Map();
+        var accessToken = null;
+        var userInfo = null;
+        var moderators = new Set();
+        var allowMultipleEntries = false;
+        var entryCooldownTime = 5000;
+        var useCustomColors = false;
+        var customColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
+        var participantWeights = new Map();
+        var audioContext = null;
+        var soundsEnabled = true;
+        var currentTickOscillator = null;
 
-        // Twitch OAuth configuration
-        const CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht';
-        const REDIRECT_URI = window.location.origin + window.location.pathname;
-        const SCOPES = ['chat:read', 'user:read:email'];
+        var CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht';
+        var REDIRECT_URI = window.location.origin + window.location.pathname;
+        var SCOPES = ['chat:read', 'user:read:email'];
 
-        // Theme management
+        var wheelColors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
+            '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
+            '#10AC84', '#EE5A24', '#0084FF', '#B33771', '#FD79A8',
+            '#A55EEA', '#26DE81', '#FD79A8', '#F8B500', '#7158E2'
+        ];
+
+        function loadSettings() {
+            var saved = localStorage.getItem('wheelSettings');
+            if (saved) {
+                try {
+                    var settings = JSON.parse(saved);
+                    allowMultipleEntries = settings.allowMultipleEntries || false;
+                    entryCooldownTime = settings.entryCooldownTime || 5000;
+                    useCustomColors = settings.useCustomColors || false;
+                    customColors = settings.customColors || customColors;
+                    if (settings.participantWeights) {
+                        participantWeights = new Map(settings.participantWeights);
+                    }
+                } catch (e) {
+                    console.error('Failed to load settings:', e);
+                }
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            updateSettingsUI();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function updateSettingsUI() {
+            document.getElementById('allowMultipleEntries').checked = allowMultipleEntries;
+            document.getElementById('entryCooldown').value = entryCooldownTime / 1000;
+            document.getElementById('useCustomColors').checked = useCustomColors;
+            document.getElementById('colorSettings').style.display = useCustomColors ? 'block' : 'none';
+            document.getElementById('participantWeights').style.display = participants.length > 0 ? 'block' : 'none';
+            updateColorList();
+            updateWeightsList();
+        }
+
+        function updateColorList() {
+            var colorList = document.getElementById('colorList');
+            colorList.innerHTML = '';
+            
+            for (var i = 0; i < customColors.length; i++) {
+                var color = customColors[i];
+                var item = document.createElement('div');
+                item.className = 'setting-item';
+                
+                var labelDiv = document.createElement('div');
+                labelDiv.className = 'setting-label';
+                labelDiv.textContent = 'Color ' + (i + 1);
+                
+                var controlDiv = document.createElement('div');
+                controlDiv.className = 'setting-control';
+                
+                var colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.value = color;
+                colorInput.className = 'color-picker';
+                colorInput.setAttribute('data-index', i);
+                colorInput.onchange = function() {
+                    var index = parseInt(this.getAttribute('data-index'));
+                    customColors[index] = this.value;
+                    if (useCustomColors) drawWheel();
+                };
+                
+                var removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '×';
+                removeBtn.setAttribute('data-index', i);
+                removeBtn.onclick = function() {
+                    var index = parseInt(this.getAttribute('data-index'));
+                    if (customColors.length > 1) {
+                        customColors.splice(index, 1);
+                        updateColorList();
+                        if (useCustomColors) drawWheel();
+                    }
+                };
+                
+                controlDiv.appendChild(colorInput);
+                controlDiv.appendChild(removeBtn);
+                item.appendChild(labelDiv);
+                item.appendChild(controlDiv);
+                colorList.appendChild(item);
+            }
+        }
+
+        function updateWeightsList() {
+            var weightsList = document.getElementById('weightsList');
+            weightsList.innerHTML = '';
+            
+            for (var i = 0; i < participants.length; i++) {
+                var participant = participants[i];
+                var participantWeight = participantWeights.get(participant) || 1;
+                
+                var item = document.createElement('div');
+                item.className = 'setting-item';
+                
+                var labelDiv = document.createElement('div');
+                labelDiv.className = 'setting-label';
+                labelDiv.textContent = participant;
+                
+                var controlDiv = document.createElement('div');
+                controlDiv.className = 'setting-control';
+                
+                var label = document.createElement('label');
+                label.style.fontSize = '12px';
+                label.style.color = 'var(--text-secondary)';
+                label.textContent = 'Weight:';
+                
+                var weightInput = document.createElement('input');
+                weightInput.type = 'number';
+                weightInput.value = participantWeight;
+                weightInput.min = '0.1';
+                weightInput.max = '10';
+                weightInput.step = '0.1';
+                weightInput.className = 'weight-input';
+                weightInput.setAttribute('data-participant', participant);
+                weightInput.onchange = function() {
+                    var participant = this.getAttribute('data-participant');
+                    var newWeight = Math.max(0.1, Math.min(10, parseFloat(this.value) || 1));
+                    participantWeights.set(participant, newWeight);
+                    drawWheel();
+                };
+                
+                controlDiv.appendChild(label);
+                controlDiv.appendChild(weightInput);
+                item.appendChild(labelDiv);
+                item.appendChild(controlDiv);
+                weightsList.appendChild(item);
+            }
+        }
+
+        function addColor() {
+            var randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            customColors.push(randomColor);
+            updateColorList();
+            if (useCustomColors) drawWheel();
+        }
+
+        function saveSettings() {
+            allowMultipleEntries = document.getElementById('allowMultipleEntries').checked;
+            entryCooldownTime = parseInt(document.getElementById('entryCooldown').value) * 1000;
+            useCustomColors = document.getElementById('useCustomColors').checked;
+            
+            var settings = {
+                allowMultipleEntries: allowMultipleEntries,
+                entryCooldownTime: entryCooldownTime,
+                useCustomColors: useCustomColors,
+                customColors: customColors,
+                participantWeights: Array.from(participantWeights.entries())
+            };
+            
+            localStorage.setItem('wheelSettings', JSON.stringify(settings));
+            drawWheel();
+            closeSettings();
+            showNotification('Settings saved!', 'var(--success-color)');
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to defaults? This cannot be undone.')) {
+                allowMultipleEntries = false;
+                entryCooldownTime = 5000;
+                useCustomColors = false;
+                customColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
+                participantWeights.clear();
+                localStorage.removeItem('wheelSettings');
+                updateSettingsUI();
+                drawWheel();
+                showNotification('Settings reset to defaults!', 'var(--warning-color)');
+            }
+        }
+
+        function showNotification(message, bgColor) {
+            var notification = document.createElement('div');
+            notification.className = 'entry-notification';
+            notification.innerHTML = message;
+            notification.style.background = bgColor;
+            document.body.appendChild(notification);
+            setTimeout(function() {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 2000);
+        }
+
         function toggleTheme() {
-            const body = document.body;
-            const themeToggle = document.getElementById('themeToggleBtn');
+            var body = document.body;
+            var themeToggle = document.getElementById('themeToggleBtn');
             
             if (body.getAttribute('data-theme') === 'dark') {
                 body.setAttribute('data-theme', 'light');
-                themeToggle.textContent = '☀️ Light Mode';
+                themeToggle.textContent = 'Light Mode';
                 localStorage.setItem('theme', 'light');
             } else {
                 body.setAttribute('data-theme', 'dark');
-                themeToggle.textContent = '🌙 Dark Mode';
+                themeToggle.textContent = 'Dark Mode';
                 localStorage.setItem('theme', 'dark');
             }
         }
 
         function initializeTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            const body = document.body;
-            const themeToggle = document.getElementById('themeToggleBtn');
+            var savedTheme = localStorage.getItem('theme') || 'dark';
+            var body = document.body;
+            var themeToggle = document.getElementById('themeToggleBtn');
             
             body.setAttribute('data-theme', savedTheme);
             if (themeToggle) {
-                themeToggle.textContent = savedTheme === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode';
+                themeToggle.textContent = savedTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
             }
         }
 
-        // Sound management
         function initializeAudio() {
             soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
             updateSoundToggle();
@@ -569,126 +890,21 @@
             soundsEnabled = !soundsEnabled;
             localStorage.setItem('soundsEnabled', soundsEnabled.toString());
             updateSoundToggle();
-            
-            if (soundsEnabled && audioContext) {
-                playTickSound();
-            }
         }
 
         function updateSoundToggle() {
-            const soundToggle = document.getElementById('soundToggleBtn');
+            var soundToggle = document.getElementById('soundToggleBtn');
             if (soundToggle) {
-                soundToggle.textContent = soundsEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+                soundToggle.textContent = soundsEnabled ? 'Sound On' : 'Sound Off';
             }
         }
 
-        function playTickSound() {
-            if (!soundsEnabled || !audioContext) return;
-            
-            try {
-                if (currentTickOscillator) {
-                    try {
-                        currentTickOscillator.stop();
-                    } catch (e) {}
-                }
-                
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.02);
-                
-                currentTickOscillator = oscillator;
-                oscillator.onended = () => {
-                    currentTickOscillator = null;
-                };
-                
-            } catch (error) {
-                console.log('Audio playback failed:', error);
-            }
-        }
-
-        function playCongratsSound() {
-            if (!soundsEnabled || !audioContext) return;
-            
-            try {
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                
-                const frequencies = [523.25, 659.25, 783.99];
-                const duration = 0.8;
-                
-                frequencies.forEach((freq, index) => {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-                    oscillator.type = 'sine';
-                    
-                    const startTime = audioContext.currentTime + (index * 0.1);
-                    gainNode.gain.setValueAtTime(0, startTime);
-                    gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.1);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                    
-                    oscillator.start(startTime);
-                    oscillator.stop(startTime + duration);
-                });
-                
-                setTimeout(() => {
-                    const highOsc = audioContext.createOscillator();
-                    const highGain = audioContext.createGain();
-                    
-                    highOsc.connect(highGain);
-                    highGain.connect(audioContext.destination);
-                    
-                    highOsc.frequency.setValueAtTime(1046.5, audioContext.currentTime);
-                    highOsc.type = 'sine';
-                    
-                    highGain.gain.setValueAtTime(0, audioContext.currentTime);
-                    highGain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
-                    highGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.6);
-                    
-                    highOsc.start(audioContext.currentTime);
-                    highOsc.stop(audioContext.currentTime + 0.6);
-                }, 300);
-                
-            } catch (error) {
-                console.log('Congratulations sound failed:', error);
-            }
-        }
-
-        // Wheel colors
-        const wheelColors = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
-            '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
-            '#10AC84', '#EE5A24', '#0084FF', '#B33771', '#FD79A8',
-            '#A55EEA', '#26DE81', '#FD79A8', '#F8B500', '#7158E2'
-        ];
-
-        // Canvas and drawing functions
         function drawWheel() {
-            const canvas = document.getElementById('wheelCanvas');
-            const ctx = canvas.getContext('2d');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 180;
+            var canvas = document.getElementById('wheelCanvas');
+            var ctx = canvas.getContext('2d');
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            var radius = 180;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -709,55 +925,58 @@
                 return;
             }
             
-            const anglePerSegment = (2 * Math.PI) / participants.length;
+            var weightedSegments = createWeightedSegments();
+            var totalWeight = 0;
+            for (var i = 0; i < weightedSegments.length; i++) {
+                totalWeight += weightedSegments[i].weight;
+            }
             
-            for (let i = 0; i < participants.length; i++) {
-                const startAngle = i * anglePerSegment + currentRotation;
-                const endAngle = (i + 1) * anglePerSegment + currentRotation;
+            var currentAngle = currentRotation;
+            
+            for (var i = 0; i < weightedSegments.length; i++) {
+                var segment = weightedSegments[i];
+                var segmentAngle = (segment.weight / totalWeight) * 2 * Math.PI;
+                var endAngle = currentAngle + segmentAngle;
                 
-                // Draw segment
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.arc(centerX, centerY, radius, currentAngle, endAngle);
                 ctx.lineTo(centerX, centerY);
-                ctx.fillStyle = wheelColors[i % wheelColors.length];
+                
+                var colors = useCustomColors && customColors.length > 0 ? customColors : wheelColors;
+                ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Draw text along the segment (rotated to follow arc)
-                const textAngle = startAngle + anglePerSegment / 2;
-                const textRadius = radius * 0.7;
-                const textX = centerX + Math.cos(textAngle) * textRadius;
-                const textY = centerY + Math.sin(textAngle) * textRadius;
+                var textAngle = currentAngle + segmentAngle / 2;
+                var textRadius = radius * 0.7;
+                var textX = centerX + Math.cos(textAngle) * textRadius;
+                var textY = centerY + Math.sin(textAngle) * textRadius;
                 
                 ctx.save();
                 ctx.translate(textX, textY);
                 
-                // Rotate text to follow the arc direction
-                let rotation = textAngle;
+                var rotation = textAngle;
                 if (textAngle > Math.PI / 2 && textAngle < 3 * Math.PI / 2) {
-                    // Flip text if it would be upside down
                     rotation += Math.PI;
                 }
                 ctx.rotate(rotation);
                 
-                // Add text background for better readability
-                const textWidth = ctx.measureText(participants[i]).width;
+                var textWidth = ctx.measureText(segment.name).width;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(-textWidth/2 - 4, -10, textWidth + 8, 20);
                 
-                // Draw text
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Segoe UI';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(participants[i], 0, 0);
+                ctx.fillText(segment.name, 0, 0);
                 
                 ctx.restore();
+                currentAngle = endAngle;
             }
             
-            // Draw center circle
             ctx.beginPath();
             ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
             ctx.fillStyle = '#9146ff';
@@ -766,7 +985,6 @@
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Draw pointer (at right pointing towards center)
             ctx.beginPath();
             ctx.moveTo(centerX + radius - 18, centerY);
             ctx.lineTo(centerX + radius + 15, centerY - 12);
@@ -778,9 +996,228 @@
             ctx.stroke();
         }
 
-        // Twitch authentication
+        function createWeightedSegments() {
+            var segments = [];
+            for (var i = 0; i < participants.length; i++) {
+                var participant = participants[i];
+                var weight = participantWeights.get(participant) || 1;
+                segments.push({ name: participant, weight: weight });
+            }
+            return segments;
+        }
+
+        function spinWheel() {
+            if (participants.length === 0) {
+                alert('Add some participants first!');
+                return;
+            }
+            
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('statusText').textContent = 'Spinning...';
+            
+            var spinDuration = 4000 + Math.random() * 3000;
+            var spinAmount = Math.random() * 4 + 12;
+            var startRotation = currentRotation;
+            var startTime = Date.now();
+            
+            function animate() {
+                var elapsed = Date.now() - startTime;
+                var progress = Math.min(elapsed / spinDuration, 1);
+                
+                var easeOut = 1 - Math.pow(1 - progress, 4);
+                currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
+                
+                drawWheel();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    var winner = determineWinner();
+                    
+                    lastWinner = winner;
+                    showWinner(winner);
+                    
+                    isSpinning = false;
+                    document.getElementById('spinBtn').disabled = false;
+                    document.getElementById('statusText').textContent = 'Winner: ' + winner;
+                }
+            }
+            
+            animate();
+        }
+
+        function determineWinner() {
+            var weightedSegments = createWeightedSegments();
+            var totalWeight = 0;
+            for (var i = 0; i < weightedSegments.length; i++) {
+                totalWeight += weightedSegments[i].weight;
+            }
+            
+            var normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
+            
+            var currentAngle = 0;
+            for (var i = 0; i < weightedSegments.length; i++) {
+                var segment = weightedSegments[i];
+                var segmentAngle = (segment.weight / totalWeight) * 2 * Math.PI;
+                if (normalizedRotation >= currentAngle && normalizedRotation < currentAngle + segmentAngle) {
+                    return segment.name;
+                }
+                currentAngle += segmentAngle;
+            }
+            
+            return weightedSegments[0].name;
+        }
+
+        function showWinner(winner) {
+            var announcement = document.createElement('div');
+            announcement.className = 'winner-announcement';
+            announcement.innerHTML = 'WINNER!<br>' + winner;
+            
+            var wheelCanvas = document.getElementById('wheelCanvas');
+            var wheelSection = wheelCanvas.parentElement;
+            
+            wheelSection.style.position = 'relative';
+            wheelSection.appendChild(announcement);
+            
+            setTimeout(function() {
+                if (wheelSection.contains(announcement)) {
+                    wheelSection.removeChild(announcement);
+                }
+            }, 5000);
+        }
+
+        function addParticipant(username) {
+            if (!username) {
+                username = document.getElementById('usernameInput').value.trim();
+            }
+            
+            if (username && participants.indexOf(username) === -1) {
+                participants.push(username);
+                updateParticipantsList();
+                updateWeightsList();
+                drawWheel();
+                document.getElementById('usernameInput').value = '';
+                document.getElementById('statusText').textContent = participants.length + ' participants ready!';
+            }
+        }
+
+        function removeParticipant(username) {
+            var index = participants.indexOf(username);
+            if (index > -1) {
+                participants.splice(index, 1);
+                updateParticipantsList();
+                updateWeightsList();
+                drawWheel();
+                
+                if (participants.length === 0) {
+                    document.getElementById('statusText').textContent = 'Add participants to get started!';
+                } else {
+                    document.getElementById('statusText').textContent = participants.length + ' participants ready!';
+                }
+            }
+        }
+
+        function updateParticipantsList() {
+            var list = document.getElementById('participantsList');
+            var count = document.getElementById('participantCount');
+            
+            count.textContent = participants.length;
+            list.innerHTML = '';
+            
+            if (participants.length === 0) {
+                var p = document.createElement('p');
+                p.style.color = 'var(--text-secondary)';
+                p.style.textAlign = 'center';
+                p.style.margin = '10px 0';
+                p.textContent = 'No participants yet';
+                list.appendChild(p);
+                return;
+            }
+            
+            for (var i = 0; i < participants.length; i++) {
+                var participant = participants[i];
+                var item = document.createElement('div');
+                item.className = 'participant-item';
+                
+                var span = document.createElement('span');
+                span.textContent = participant;
+                
+                var removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '×';
+                removeBtn.setAttribute('data-participant', participant);
+                removeBtn.onclick = function() {
+                    removeParticipant(this.getAttribute('data-participant'));
+                };
+                
+                item.appendChild(span);
+                item.appendChild(removeBtn);
+                list.appendChild(item);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            loadSettings();
+            initializeTheme();
+            initializeAudio();
+            setupEventListeners();
+            checkForToken();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('settingsToggleBtn').onclick = openSettings;
+            document.getElementById('themeToggleBtn').onclick = toggleTheme;
+            document.getElementById('soundToggleBtn').onclick = toggleSound;
+            document.getElementById('settingsCloseBtn').onclick = closeSettings;
+            document.getElementById('saveSettingsBtn').onclick = saveSettings;
+            document.getElementById('resetSettingsBtn').onclick = resetSettings;
+            document.getElementById('addColorBtn').onclick = addColor;
+            
+            document.getElementById('useCustomColors').onchange = function() {
+                document.getElementById('colorSettings').style.display = this.checked ? 'block' : 'none';
+            };
+            
+            document.getElementById('settingsModal').onclick = function(e) {
+                if (e.target === this) closeSettings();
+            };
+            
+            document.getElementById('twitchLoginBtn').onclick = loginWithTwitch;
+            
+            setupAppEventListeners();
+        }
+
+        function setupAppEventListeners() {
+            var spinBtn = document.getElementById('spinBtn');
+            var logoutBtn = document.getElementById('logoutBtn');
+            var connectBtn = document.getElementById('connectBtn');
+            var addParticipantBtn = document.getElementById('addParticipantBtn');
+            var clearWheelBtn = document.getElementById('clearWheelBtn');
+            var removeWinnerBtn = document.getElementById('removeWinnerBtn');
+            var usernameInput = document.getElementById('usernameInput');
+            
+            if (spinBtn) spinBtn.onclick = spinWheel;
+            if (logoutBtn) logoutBtn.onclick = logout;
+            if (connectBtn) connectBtn.onclick = connectToTwitch;
+            if (addParticipantBtn) addParticipantBtn.onclick = addParticipant;
+            if (clearWheelBtn) clearWheelBtn.onclick = clearWheel;
+            if (removeWinnerBtn) removeWinnerBtn.onclick = removeWinner;
+            
+            if (usernameInput) {
+                usernameInput.onkeypress = function(e) {
+                    if (e.key === 'Enter') addParticipant();
+                };
+            }
+        }
+
         function loginWithTwitch() {
-            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join('+')}&state=${Math.random().toString(36)}`;
+            var authUrl = 'https://id.twitch.tv/oauth2/authorize?client_id=' + CLIENT_ID + 
+                '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) + 
+                '&response_type=token&scope=' + SCOPES.join('+') + 
+                '&state=' + Math.random().toString(36);
             window.location.href = authUrl;
         }
 
@@ -807,15 +1244,13 @@
             document.getElementById('appSection').style.display = 'block';
             drawWheel();
             updateParticipantsList();
-            // Re-setup event listeners for app section elements
             setupAppEventListeners();
         }
 
-        // Check for OAuth token on page load
         function checkForToken() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const token = params.get('access_token');
+            var hash = window.location.hash.substring(1);
+            var params = new URLSearchParams(hash);
+            var token = params.get('access_token');
             
             if (token) {
                 accessToken = token;
@@ -825,7 +1260,7 @@
                 return;
             }
             
-            const storedToken = localStorage.getItem('twitch_token');
+            var storedToken = localStorage.getItem('twitch_token');
             if (storedToken) {
                 accessToken = storedToken;
                 validateToken();
@@ -835,33 +1270,37 @@
             showAuthSection();
         }
 
-        async function validateToken() {
+        function validateToken() {
             if (!accessToken) {
                 showAuthSection();
                 return;
             }
 
-            try {
-                const response = await fetch('https://api.twitch.tv/helix/users', {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Client-Id': CLIENT_ID
-                    }
-                });
-
+            fetch('https://api.twitch.tv/helix/users', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Client-Id': CLIENT_ID
+                }
+            })
+            .then(function(response) {
                 if (response.ok) {
-                    const data = await response.json();
+                    return response.json();
+                } else {
+                    logout();
+                }
+            })
+            .then(function(data) {
+                if (data) {
                     userInfo = data.data[0];
                     localStorage.setItem('twitch_user', JSON.stringify(userInfo));
                     updateUserInfo();
                     showAppSection();
-                } else {
-                    logout();
                 }
-            } catch (error) {
+            })
+            .catch(function(error) {
                 console.error('Token validation failed:', error);
                 logout();
-            }
+            });
         }
 
         function updateUserInfo() {
@@ -873,177 +1312,13 @@
         }
 
         function updateConnectionStatus(status, type) {
-            const statusElement = document.getElementById('chatStatus');
+            var statusElement = document.getElementById('chatStatus');
             statusElement.textContent = status;
-            statusElement.className = `status-${type}`;
+            statusElement.className = 'status-' + type;
         }
 
-        // Wheel spinning logic
-        function spinWheel() {
-            if (participants.length === 0) {
-                alert('Add some participants first!');
-                return;
-            }
-            
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            document.getElementById('spinBtn').disabled = true;
-            document.getElementById('statusText').textContent = 'Spinning...';
-            
-            const spinDuration = 4000 + Math.random() * 3000;
-            const spinAmount = Math.random() * 4 + 12;
-            const startRotation = currentRotation;
-            const startTime = Date.now();
-            
-            const anglePerSegment = (2 * Math.PI) / participants.length;
-            let lastSegmentIndex = -1;
-            
-            function animate() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / spinDuration, 1);
-                
-                const easeOut = 1 - Math.pow(1 - progress, 4);
-                currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
-                
-                const normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
-                const currentSegmentIndex = Math.floor(normalizedRotation / anglePerSegment);
-                
-                if (soundsEnabled && currentSegmentIndex !== lastSegmentIndex && lastSegmentIndex !== -1) {
-                    playTickSound();
-                }
-                lastSegmentIndex = currentSegmentIndex;
-                
-                drawWheel();
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    const winnerIndex = Math.floor(normalizedRotation / anglePerSegment);
-                    const winner = participants[winnerIndex];
-                    
-                    lastWinner = winner;
-                    showWinner(winner);
-                    
-                    setTimeout(() => playCongratsSound(), 500);
-                    
-                    isSpinning = false;
-                    document.getElementById('spinBtn').disabled = false;
-                    document.getElementById('statusText').textContent = `Winner: ${winner}`;
-                }
-            }
-            
-            animate();
-        }
-
-        function showWinner(winner) {
-            const announcement = document.createElement('div');
-            announcement.className = 'winner-announcement';
-            announcement.innerHTML = `🎉 WINNER! 🎉<br>${winner}`;
-            
-            // Position relative to the wheel canvas
-            const wheelCanvas = document.getElementById('wheelCanvas');
-            const wheelSection = wheelCanvas.parentElement;
-            
-            // Make sure the wheel section has relative positioning
-            wheelSection.style.position = 'relative';
-            
-            // Append to wheel section instead of body
-            wheelSection.appendChild(announcement);
-            
-            setTimeout(() => {
-                if (wheelSection.contains(announcement)) {
-                    wheelSection.removeChild(announcement);
-                }
-            }, 5000);
-        }
-
-        // Participant management
-        function addParticipant(username) {
-            if (!username) {
-                username = document.getElementById('usernameInput').value.trim();
-            }
-            
-            if (username && !participants.includes(username)) {
-                participants.push(username);
-                updateParticipantsList();
-                drawWheel();
-                document.getElementById('usernameInput').value = '';
-                document.getElementById('statusText').textContent = `${participants.length} participants ready!`;
-            }
-        }
-
-        function removeParticipant(username) {
-            const index = participants.indexOf(username);
-            if (index > -1) {
-                participants.splice(index, 1);
-                updateParticipantsList();
-                drawWheel();
-                
-                if (participants.length === 0) {
-                    document.getElementById('statusText').textContent = 'Add participants to get started!';
-                } else {
-                    document.getElementById('statusText').textContent = `${participants.length} participants ready!`;
-                }
-            }
-        }
-
-        function removeWinner() {
-            if (lastWinner && participants.includes(lastWinner)) {
-                removeParticipant(lastWinner);
-                lastWinner = null;
-                document.getElementById('statusText').textContent = 'Winner removed!';
-            }
-        }
-
-        function clearWheel() {
-            if (participants.length === 0) return;
-            
-            if (confirm('Remove all participants?')) {
-                participants = [];
-                lastWinner = null;
-                participantCooldown.clear();
-                updateParticipantsList();
-                drawWheel();
-                document.getElementById('statusText').textContent = 'Wheel cleared!';
-                updateConnectionStatus('Disconnected', 'error');
-                
-                if (twitchSocket) {
-                    twitchSocket.close();
-                    twitchSocket = null;
-                    isConnected = false;
-                    document.getElementById('connectBtn').textContent = '🔗 Connect to Chat';
-                    document.getElementById('connectBtn').onclick = connectToTwitch;
-                }
-            }
-        }
-
-        function updateParticipantsList() {
-            const list = document.getElementById('participantsList');
-            const count = document.getElementById('participantCount');
-            
-            count.textContent = participants.length;
-            list.innerHTML = '';
-            
-            if (participants.length === 0) {
-                list.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin: 10px 0;">No participants yet</p>';
-                return;
-            }
-            
-            participants.forEach(participant => {
-                const item = document.createElement('div');
-                item.className = 'participant-item';
-                item.innerHTML = `
-                    <span>${participant}</span>
-                    <button class="remove-btn" onclick="removeParticipant('${participant}')">×</button>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        // Twitch chat connection
         function connectToTwitch() {
-            const keyword = document.getElementById('keywordInput').value.trim();
+            var keyword = document.getElementById('keywordInput').value.trim();
             
             if (!keyword) {
                 alert('Please enter a keyword for entries (e.g., !enter)');
@@ -1055,7 +1330,7 @@
                 return;
             }
             
-            const channelName = userInfo.login;
+            var channelName = userInfo.login;
             entryKeyword = keyword;
             
             updateConnectionStatus('Connecting...', 'warning');
@@ -1066,21 +1341,16 @@
             }
             
             try {
-                console.log(`Connecting to Twitch IRC for channel: ${channelName}`);
                 twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
                 
                 twitchSocket.onopen = function() {
-                    console.log('✅ WebSocket opened, authenticating...');
-                    
-                    twitchSocket.send(`PASS oauth:${accessToken}\r\n`);
-                    twitchSocket.send(`NICK ${userInfo.login}\r\n`);
-                    
+                    twitchSocket.send('PASS oauth:' + accessToken + '\r\n');
+                    twitchSocket.send('NICK ' + userInfo.login + '\r\n');
                     twitchSocket.send('CAP REQ :twitch.tv/commands\r\n');
                     twitchSocket.send('CAP REQ :twitch.tv/tags\r\n');
                     
-                    setTimeout(() => {
-                        twitchSocket.send(`JOIN #${channelName}\r\n`);
-                        console.log(`Joining channel #${channelName}`);
+                    setTimeout(function() {
+                        twitchSocket.send('JOIN #' + channelName + '\r\n');
                     }, 1000);
                 };
                 
@@ -1088,275 +1358,119 @@
                     handleTwitchMessage(event.data);
                 };
                 
-                twitchSocket.onclose = function(event) {
-                    console.log('WebSocket closed:', event.code, event.reason);
+                twitchSocket.onclose = function() {
                     updateConnectionStatus('Disconnected', 'error');
-                    document.getElementById('connectBtn').textContent = '🔗 Connect to Chat';
+                    document.getElementById('connectBtn').textContent = 'Connect to Chat';
                     document.getElementById('connectBtn').disabled = false;
                     document.getElementById('connectBtn').onclick = connectToTwitch;
                     isConnected = false;
                 };
                 
-                twitchSocket.onerror = function(error) {
-                    console.error('WebSocket error:', error);
+                twitchSocket.onerror = function() {
                     updateConnectionStatus('Connection Error', 'error');
                     document.getElementById('connectBtn').disabled = false;
-                    alert('Failed to connect to Twitch chat. Please check your connection and try again.');
+                    alert('Failed to connect to Twitch chat.');
                 };
                 
             } catch (error) {
-                console.error('Failed to create WebSocket:', error);
                 updateConnectionStatus('Connection Failed', 'error');
                 document.getElementById('connectBtn').disabled = false;
                 alert('Connection failed: ' + error.message);
             }
         }
 
-        function disconnectFromTwitch() {
-            if (twitchSocket) {
-                twitchSocket.close();
-                twitchSocket = null;
-            }
-            isConnected = false;
-            moderators.clear();
-            updateConnectionStatus('Disconnected', 'error');
-            document.getElementById('connectBtn').textContent = '🔗 Connect to Chat';
-            document.getElementById('connectBtn').onclick = connectToTwitch;
-            document.getElementById('connectBtn').disabled = false;
-        }
-
         function handleTwitchMessage(rawMessage) {
-            const lines = rawMessage.split('\r\n');
-            for (let line of lines) {
+            var lines = rawMessage.split('\r\n');
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
                 if (!line) continue;
 
-                console.log('IRC:', line);
-
-                // Respond to PING
-                if (line.startsWith('PING')) {
+                if (line.indexOf('PING') === 0) {
                     try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch (e) {}
                     continue;
                 }
 
-                // Auth banners
-                if (line.includes('001') || line.includes('Welcome')) {
-                    console.log('✅ Successfully authenticated with Twitch IRC');
-                    updateConnectionStatus('Authenticated', 'warning');
-                }
-
-                // Joined channel
-                if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
+                if (line.indexOf('366') !== -1 && line.indexOf('#' + userInfo.login) !== -1) {
                     isConnected = true;
-                    updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
-                    const btn = document.getElementById('connectBtn');
+                    updateConnectionStatus('Connected to #' + userInfo.login, 'connected');
+                    var btn = document.getElementById('connectBtn');
                     if (btn) {
-                        btn.textContent = '🔌 Disconnect';
+                        btn.textContent = 'Disconnect';
                         btn.disabled = false;
-                        btn.onclick = disconnectFromTwitch;
+                        btn.onclick = function() {
+                            if (twitchSocket) twitchSocket.close();
+                        };
                     }
-                    console.log(`✅ Successfully joined #${userInfo.login}`);
                 }
 
-                // --- Only handle PRIVMSG chat lines ---
-                if (!line.includes('PRIVMSG')) continue;
+                if (line.indexOf('PRIVMSG') === -1) continue;
 
-                // --- Parse IRC tags (optional) ---
-                const tagMap = {};
-                if (line.startsWith('@')) {
-                    const firstSpace = line.indexOf(' ');
-                    const tagStr = line.substring(1, firstSpace);
-                    tagStr.split(';').forEach(p => {
-                        const [k, v] = p.split('=');
-                        tagMap[k] = v ?? '';
-                    });
-                }
+                var username = null;
+                var userMatch = line.match(/:([^!\s]+)!/);
+                if (userMatch) username = userMatch[1];
 
-                // --- Extract username ---
-                const userMatch = line.match(/:([^!\s]+)!/);
-                const username = userMatch ? userMatch[1] : null;
-
-                // --- Extract message text ---
-                let message = null;
-                const privIdx = line.indexOf(' PRIVMSG ');
+                var message = null;
+                var privIdx = line.indexOf(' PRIVMSG ');
                 if (privIdx !== -1) {
-                    const after = line.slice(privIdx);
-                    const colonIdx = after.indexOf(' :');
+                    var after = line.slice(privIdx);
+                    var colonIdx = after.indexOf(' :');
                     if (colonIdx !== -1) {
                         message = after.slice(colonIdx + 2).trim();
                     }
                 }
 
-                // --- Role detection ---
-                let isBroadcaster = false;
-                let isModerator = false;
-
-                const badges = tagMap.badges || '';
-                if (badges) {
-                    isBroadcaster = badges.includes('broadcaster');
-                    isModerator = badges.includes('moderator') || isBroadcaster;
-                }
-                if (tagMap.mod === '1') isModerator = true;
-                if (username && userInfo && userInfo.login && username.toLowerCase() === userInfo.login.toLowerCase()) {
-                    isBroadcaster = true;
-                    isModerator = true;
-                }
-
-                // --- Reactions ---
                 if (username && message) {
-                    console.log(`Chat: ${username}: ${message} (mod:${isModerator}, bc:${isBroadcaster})`);
-
-                    // Anyone can enter with the configured keyword
-                    if (typeof entryKeyword === 'string' && message.toLowerCase() === entryKeyword.toLowerCase()) {
+                    if (message.toLowerCase() === entryKeyword.toLowerCase()) {
                         handleChatEntry(username);
                     }
-
-                    // Only mods or broadcaster can spin
-                    if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
-                        console.log(`Moderator ${username} triggered spin command`);
+                    if (message.toLowerCase() === '!spin') {
                         spinWheel();
-
-                        const n = document.createElement('div');
-                        n.className = 'entry-notification';
-                        n.innerHTML = `🎯 ${username} spun the wheel!`;
-                        n.style.background = 'var(--accent-primary)';
-                        document.body.appendChild(n);
-                        setTimeout(() => {
-                            if (document.body.contains(n)) document.body.removeChild(n);
-                        }, 3000);
                     }
                 }
             }
         }
 
         function handleChatEntry(username) {
-            const now = Date.now();
-            const cooldownTime = 5000;
+            var now = Date.now();
             
             if (participantCooldown.has(username)) {
-                const lastEntry = participantCooldown.get(username);
-                if (now - lastEntry < cooldownTime) {
-                    console.log(`${username} is on cooldown, ignoring entry`);
+                var lastEntry = participantCooldown.get(username);
+                if (now - lastEntry < entryCooldownTime) {
                     return;
                 }
             }
             
-            if (!participants.includes(username)) {
+            if (participants.indexOf(username) === -1) {
                 participants.push(username);
                 participantCooldown.set(username, now);
                 updateParticipantsList();
+                updateWeightsList();
                 drawWheel();
                 
-                console.log(`✅ ${username} entered the giveaway!`);
-                document.getElementById('statusText').textContent = `${participants.length} participants ready! Latest: ${username}`;
-                
-                showEntryNotification(username);
-            } else {
-                console.log(`${username} already entered`);
+                document.getElementById('statusText').textContent = participants.length + ' participants ready! Latest: ' + username;
+                showNotification(username + ' entered!', 'var(--success-color)');
             }
         }
 
-        function showEntryNotification(username) {
-            const notification = document.createElement('div');
-            notification.className = 'entry-notification';
-            notification.innerHTML = `🎯 ${username} entered!`;
-            document.body.appendChild(notification);
+        function clearWheel() {
+            if (participants.length === 0) return;
             
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 3000);
-        }
-        
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
-            initializeTheme();
-            initializeAudio();
-            setupEventListeners();
-            checkForToken();
-        });
-
-        function setupEventListeners() {
-            console.log('Setting up event listeners...');
-            
-            // Theme and sound toggles (always present)
-            const themeToggleBtn = document.getElementById('themeToggleBtn');
-            const soundToggleBtn = document.getElementById('soundToggleBtn');
-            
-            if (themeToggleBtn) {
-                themeToggleBtn.onclick = toggleTheme;
-                console.log('Theme toggle listener added');
-            } else {
-                console.log('Theme toggle button not found');
+            if (confirm('Remove all participants?')) {
+                participants = [];
+                lastWinner = null;
+                participantCooldown.clear();
+                updateParticipantsList();
+                updateWeightsList();
+                drawWheel();
+                document.getElementById('statusText').textContent = 'Wheel cleared!';
             }
-            
-            if (soundToggleBtn) {
-                soundToggleBtn.onclick = toggleSound;
-                console.log('Sound toggle listener added');
-            } else {
-                console.log('Sound toggle button not found');
-            }
-            
-            // Auth section button
-            const twitchLoginBtn = document.getElementById('twitchLoginBtn');
-            if (twitchLoginBtn) {
-                twitchLoginBtn.onclick = loginWithTwitch;
-                console.log('Twitch login listener added');
-            }
-            
-            // App section buttons (might not be visible initially)
-            setupAppEventListeners();
         }
 
-        function setupAppEventListeners() {
-            console.log('Setting up app event listeners...');
-            
-            const spinBtn = document.getElementById('spinBtn');
-            const usernameInput = document.getElementById('usernameInput');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const connectBtn = document.getElementById('connectBtn');
-            const addParticipantBtn = document.getElementById('addParticipantBtn');
-            const clearWheelBtn = document.getElementById('clearWheelBtn');
-            const removeWinnerBtn = document.getElementById('removeWinnerBtn');
-
-            if (spinBtn) {
-                spinBtn.onclick = spinWheel;
-                console.log('Spin button listener added');
-            }
-            
-            if (usernameInput) {
-                usernameInput.onkeypress = function(e) {
-                    if (e.key === 'Enter') {
-                        addParticipant();
-                    }
-                };
-                console.log('Username input listener added');
-            }
-            
-            if (logoutBtn) {
-                logoutBtn.onclick = logout;
-                console.log('Logout listener added');
-            }
-            
-            if (connectBtn) {
-                connectBtn.onclick = connectToTwitch;
-                console.log('Connect button listener added');
-            }
-            
-            if (addParticipantBtn) {
-                addParticipantBtn.onclick = addParticipant;
-                console.log('Add participant listener added');
-            }
-            
-            if (clearWheelBtn) {
-                clearWheelBtn.onclick = clearWheel;
-                console.log('Clear wheel listener added');
-            }
-            
-            if (removeWinnerBtn) {
-                removeWinnerBtn.onclick = removeWinner;
-                console.log('Remove winner listener added');
+        function removeWinner() {
+            if (lastWinner && participants.indexOf(lastWinner) !== -1) {
+                removeParticipant(lastWinner);
+                lastWinner = null;
+                document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
     </script>
