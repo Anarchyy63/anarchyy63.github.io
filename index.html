@@ -650,6 +650,7 @@
         var isConnected = false;
         var lastWinner =
             if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
+                console.log("Winner chosen, playing celebration sound");
         var entryKeyword = '!enter';
         var participantCooldown = new Map();
         var accessToken = null;
@@ -1136,6 +1137,7 @@
 
             lastWinner =
             if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound winner;
+                console.log("Winner chosen, playing celebration sound");
             showWinner(winner);
 
             isSpinning = false;
@@ -1300,6 +1302,7 @@ function updateParticipantsList() {
             participants = [];
             lastWinner =
             if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
+                console.log("Winner chosen, playing celebration sound");
             participantCooldown.clear();
             updateParticipantsList();
             updateWeightsList();
@@ -1313,6 +1316,7 @@ function updateParticipantsList() {
             removeParticipant(lastWinner);
             lastWinner =
             if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
+                console.log("Winner chosen, playing celebration sound");
             document.getElementById('statusText').textContent = 'Winner removed!';
         }
     }
@@ -1716,6 +1720,7 @@ if (usernameInput) {
                 participants = [];
                 lastWinner =
             if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
+                console.log("Winner chosen, playing celebration sound");
                 participantCooldown.clear();
                 updateParticipantsList();
                 updateWeightsList();
@@ -1729,6 +1734,7 @@ if (usernameInput) {
                 removeParticipant(lastWinner);
                 lastWinner =
             if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
+                console.log("Winner chosen, playing celebration sound");
                 document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
