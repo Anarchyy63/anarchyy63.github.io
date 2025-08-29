@@ -1172,17 +1172,103 @@
         }
 
         function handleTwitchMessage(rawMessage) {
-            const lines = rawMessage.split('\r\n');
-            
-            for (let line of lines) {
-                if (!line) continue;
-                
-                console.log('IRC:', line);
-                
-                if (line.startsWith('PING')) {
-                    twitchSocket.send('PONG :tmi.twitch.tv\r\n');
-                    continue;
-                }
+    const lines = rawMessage.split('\r\n');
+    for (let line of lines) {
+        if (!line) continue;
+        console.log('IRC:', line);
+
+        // Keepalive
+        if (line.startsWith('PING')) {
+            try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch(e) {}
+            continue;
+        }
+
+        // Auth status
+        if (line.includes('001') || line.includes('Welcome')) {
+            updateConnectionStatus('Authenticated', 'warning');
+        }
+        if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
+            isConnected = true;
+            updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
+            const btn = document.getElementById('connectBtn');
+            if (btn) {
+                btn.textContent = '🔌 Disconnect';
+                btn.disabled = false;
+                btn.onclick = disconnectFromTwitch;
+            }
+        }
+
+        // Chat messages
+        if (!line.includes('PRIVMSG')) continue;
+
+        // --- TAGS (optional) ---
+        let tagMap = {};
+        if (line.startsWith('@')) {
+            const firstSpace = line.indexOf(' ');
+            const tagStr = line.substring(1, firstSpace);
+            tagStr.split(';').forEach(p => {
+                const [k, v] = p.split('=');
+                tagMap[k] = v ?? '';
+            });
+        }
+
+        // --- Username ---
+        // Matches ":username!" after the (optional) tags and colon
+        const userMatch = line.match(/:([^!\s]+)!/);
+        const username = userMatch ? userMatch[1] : null;
+
+        // --- Message body ---
+        // Everything after the first " PRIVMSG #channel :" (note space before PRIVMSG)
+        let message = null;
+        const splitIdx = line.indexOf(' PRIVMSG ');
+        if (splitIdx !== -1) {
+            const after = line.slice(splitIdx);
+            const colonIdx = after.indexOf(' :');
+            if (colonIdx !== -1) {
+                message = after.slice(colonIdx + 2).trim();
+            }
+        }
+
+        // --- Roles ---
+        let isBroadcaster = false;
+        let isModerator = false;
+
+        const badges = tagMap.badges || '';
+        if (badges) {
+            isBroadcaster = badges.includes('broadcaster');
+            isModerator = badges.includes('moderator') || isBroadcaster;
+        }
+        if (tagMap.mod === '1') isModerator = true;
+        if (username && username.toLowerCase() === (userInfo.login || '').toLowerCase()) {
+            isBroadcaster = true;
+            isModerator = true;
+        }
+
+        // --- Act on commands ---
+        if (username && message) {
+            console.log(`Chat: ${username}: ${message} (mod:${isModerator}, bc:${isBroadcaster})`);
+
+            // Entry keyword (anyone)
+            if (typeof entryKeyword === 'string' && message.toLowerCase() === entryKeyword.toLowerCase()) {
+                handleChatEntry(username);
+            }
+
+            // Spin (mods/broadcaster only)
+            if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
+                spinWheel();
+
+                const n = document.createElement('div');
+                n.className = 'entry-notification';
+                n.innerHTML = `🎯 ${username} spun the wheel!`;
+                n.style.background = 'var(--accent-primary)';
+                document.body.appendChild(n);
+                setTimeout(() => {
+                    if (document.body.contains(n)) document.body.removeChild(n);
+                }, 3000);
+            }
+        }
+    }
+}
                 
                 if (line.includes('001') || line.includes('Welcome')) {
                     console.log('✅ Successfully authenticated with Twitch IRC');
