@@ -1192,10 +1192,27 @@ function determineWinner() {
         }
 
 
+
 function addParticipant(username) {
     if (!username) {
         username = document.getElementById('usernameInput').value.trim();
     }
+    if (!username || typeof username !== "string") return;
+    username = username.toString().trim();
+    if (!username) return;
+
+    // Always add as a separate slice (string)
+    participants.push(username);
+    participantEntries.set(username, (participantEntries.get(username) || 0) + 1);
+    participantWeights.set(username, 1);
+
+    updateParticipantsList();
+    updateWeightsList();
+    drawWheel();
+
+    document.getElementById('usernameInput').value = '';
+}
+
     if (!username || typeof username !== "string") return;
     username = username.toString().trim();
     if (!username) return;
@@ -1211,7 +1228,6 @@ function addParticipant(username) {
     updateWeightsList();
     drawWheel();
     document.getElementById('usernameInput').value = '';
-}
     if (!username) return;
 
     // Always add as a separate slice
