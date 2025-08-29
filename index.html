@@ -886,6 +886,7 @@
             : '☀️ Light Mode';
     }
 }
+        }
 
         function initializeAudio() {
             soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
@@ -1210,17 +1211,7 @@ function determineWinner() {
         (totalEntries > 1 ? ' ' + username + ' entries: ' + totalEntries : '');
 }
             
-            if (username && participants.indexOf(username) === -1) {
-                participants.push(username);
-                updateParticipantsList();
-                updateWeightsList();
-                drawWheel();
-                document.getElementById('usernameInput').value = '';
-                document.getElementById('statusText').textContent = participants.length + ' participants ready!';
-            }
-        }
-
-        function removeParticipant(username) {
+            function removeParticipant(username) {
             var index = participants.indexOf(username);
             if (index > -1) {
                 participants.splice(index, 1);
