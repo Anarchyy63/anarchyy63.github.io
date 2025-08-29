@@ -1298,6 +1298,19 @@ function updateParticipantsList() {
     }
 
 function setupAppEventListeners() {
+        document.getElementById('addParticipantBtn').addEventListener('click', function() {
+            const name = document.getElementById('usernameInput').value.trim();
+            if (name) addParticipant(name);
+        });
+
+        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const name = this.value.trim();
+                if (name) addParticipant(name);
+            }
+        });
+
     var usernameInput = document.getElementById('usernameInput');
     if (usernameInput) {
         usernameInput.addEventListener('keydown', function(e) {
@@ -1313,10 +1326,7 @@ function setupAppEventListeners() {
             var spinBtn = document.getElementById('spinBtn');
             var logoutBtn = document.getElementById('logoutBtn');
             var connectBtn = document.getElementById('connectBtn');
-            var addParticipantBtn = document.getElementById('addParticipantBtn');
-            var clearWheelBtn = document.getElementById('clearWheelBtn');
-            var removeWinnerBtn = document.getElementById('removeWinnerBtn');
-            var usernameInput = document.getElementById('usernameInput');
+            var addParticipantBtn = 
             
             if (spinBtn) spinBtn.onclick = spinWheel;
             if (logoutBtn) logoutBtn.onclick = logout;
@@ -1590,6 +1600,51 @@ function setupAppEventListeners() {
     }
 }              
 
+        
+        function handleAddEntryCommand(message, modUsername) {
+            var parts = message.split(' ');
+            if (parts.length < 2) return;
+            var targetUser = parts[1].trim();
+            if (!targetUser) return;
+
+            var count = 1;
+            if (parts.length >= 3) {
+                var parsedCount = parseInt(parts[2]);
+                if (!isNaN(parsedCount) && parsedCount > 0 && parsedCount <= 10) {
+                    count = parsedCount;
+                }
+            }
+
+            for (var i = 0; i < count; i++) {
+                participants.push(targetUser);
+            }
+            participantEntries.set(targetUser, (participantEntries.get(targetUser) || 0) + count);
+
+            updateParticipantsList();
+            updateWeightsList();
+            drawWheel();
+
+            var totalEntries = participantEntries.get(targetUser);
+            showNotification(modUsername + ' added ' + count + ' entries for ' + targetUser + ' (total: ' + totalEntries + ')', 'var(--success-color)');
+            document.getElementById('statusText').textContent = participants.length + ' participants ready!';
+        }
+
+
+        function handleWeightCommand(message, modUsername) {
+            var parts = message.split(' ');
+            if (parts.length < 3) return;
+            var targetUser = parts[1].trim();
+            var weight = parseFloat(parts[2]);
+
+            if (!targetUser || isNaN(weight) || weight < 0.1 || weight > 10) return;
+
+            participantWeights.set(targetUser, weight);
+
+            updateWeightsList();
+            drawWheel();
+            showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
+        }
+
         function handleChatEntry(username, isModerator) {
             var now = Date.now();
             
@@ -1646,17 +1701,7 @@ function setupAppEventListeners() {
             }
         }
     
-        function handleAddEntryCommand(message, modUsername) {
-            var parts = message.split(' ');
-            if (parts.length < 2) return;
-            var targetUser = parts[1];
-            var count = 1;
-            if (parts.length >= 3) {
-                var parsedCount = parseInt(parts[2]);
-                if (!isNaN(parsedCount) && parsedCount > 0 && parsedCount <= 10) {
-                    count = parsedCount;
-                }
-            }
+                    }
 
             // Add new participant objects
             for (var i = 0; i < count; i++) {
@@ -1672,21 +1717,7 @@ function setupAppEventListeners() {
         }
 
 
-        function handleWeightCommand(message, modUsername) {
-            var parts = message.split(' ');
-            if (parts.length < 3) return;
-            var targetUser = parts[1];
-            var weight = parseFloat(parts[2]);
-            if (isNaN(weight) || weight < 0.1 || weight > 10) return;
-
-            // Update all slices of that user
-            var updated = false;
-            for (var i = 0; i < participants.length; i++) {
-                if (participants[i].name.toLowerCase() === targetUser.toLowerCase()) {
-                    participants[i].weight = weight;
-                    updated = true;
-                }
-            }
+                    }
 
             if (updated) {
                 updateWeightsList();
