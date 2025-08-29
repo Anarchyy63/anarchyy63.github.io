@@ -382,7 +382,6 @@
 
         .settings-content {
             background: var(--bg-secondary);
-            backdrop-filter: blur(10px);
             padding: 30px;
             border-radius: 20px;
             border: 1px solid var(--border-color);
@@ -391,7 +390,6 @@
             max-height: 80vh;
             overflow-y: auto;
             width: 90%;
-            opacity: 0.95;
         }
 
         .settings-header {
@@ -659,7 +657,6 @@
         var useCustomColors = false;
         var customColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
         var participantWeights = new Map();
-        var participantEntries = new Map(); // Track how many times each participant entered
         var audioContext = null;
         var soundsEnabled = true;
         var currentTickOscillator = null;
@@ -865,66 +862,47 @@
             
             if (body.getAttribute('data-theme') === 'dark') {
                 body.setAttribute('data-theme', 'light');
-                themeToggle.textContent = '☀️ Light Mode';
+                themeToggle.textContent = 'Light Mode';
                 localStorage.setItem('theme', 'light');
             } else {
                 body.setAttribute('data-theme', 'dark');
-                themeToggle.textContent = '🌙 Dark Mode';
+                themeToggle.textContent = 'Dark Mode';
                 localStorage.setItem('theme', 'dark');
             }
         }
 
         function initializeTheme() {
-    var savedTheme = localStorage.getItem('theme') || 'dark';
-    var body = document.body;
-    var themeToggle = document.getElementById('themeToggleBtn');
-
-    body.setAttribute('data-theme', savedTheme);
-    if (themeToggle) {
-        themeToggle.textContent = savedTheme === 'dark'
-            ? '🌙 Dark Mode'
-            : '☀️ Light Mode';
-    }
-}
+            var savedTheme = localStorage.getItem('theme') || 'dark';
+            var body = document.body;
+            var themeToggle = document.getElementById('themeToggleBtn');
+            
+            body.setAttribute('data-theme', savedTheme);
+            if (themeToggle) {
+                themeToggle.textContent = savedTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
+            }
+        }
 
         function initializeAudio() {
             soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
             updateSoundToggle();
             
-            // Initialize audio context on user interaction
-            document.addEventListener('click', function initAudioContext() {
-                if (!audioContext) {
-                    try {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        console.log('Audio context initialized');
-                    } catch (e) {
-                        console.log('Audio not supported');
-                    }
-                }
-            }, { once: true });
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                audioContext = new (AudioContext || webkitAudioContext)();
+            }
         }
 
         function toggleSound() {
             soundsEnabled = !soundsEnabled;
             localStorage.setItem('soundsEnabled', soundsEnabled.toString());
             updateSoundToggle();
-            
-            // Test sound when enabling
-            if (soundsEnabled) {
-                playTickSound();
-            }
         }
 
         function updateSoundToggle() {
             var soundToggle = document.getElementById('soundToggleBtn');
             if (soundToggle) {
-                soundToggle.textContent = soundsEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+                soundToggle.textContent = soundsEnabled ? 'Sound On' : 'Sound Off';
             }
         }
-
-         catch (error) {
-            }
-        
 
         function drawWheel() {
             var canvas = document.getElementById('wheelCanvas');
@@ -1034,60 +1012,49 @@
         }
 
         function spinWheel() {
-    if (participants.length === 0) {
-        alert('Add some participants first!');
-        return;
-    }
-
-    if (isSpinning) return;
-
-    isSpinning = true;
-    document.getElementById('spinBtn').disabled = true;
-    document.getElementById('statusText').textContent = 'Spinning...';
-
-    var spinDuration = 4000 + Math.random() * 3000;
-    var spinAmount = Math.random() * 4 + 12;
-    var startRotation = currentRotation;
-    var startTime = Date.now();
-    var lastTickIndex = -1;
-
-    function animate() {
-        var elapsed = Date.now() - startTime;
-        var progress = Math.min(elapsed / spinDuration, 1);
-
-        var easeOut = 1 - Math.pow(1 - progress, 4);
-        currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
-
-        drawWheel();
-
-        // tick sound per segment boundary
-        var weightedSegments = createWeightedSegments();
-        var totalWeight = weightedSegments.reduce((sum, seg) => sum + seg.weight, 0);
-        var anglePerUnit = (2 * Math.PI) / totalWeight;
-        var tickIndex = Math.floor((currentRotation % (2 * Math.PI)) / anglePerUnit);
-        if (tickIndex !== lastTickIndex) {
-            playTickSound();
-            lastTickIndex = tickIndex;
+            if (participants.length === 0) {
+                alert('Add some participants first!');
+                return;
+            }
+            
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('statusText').textContent = 'Spinning...';
+            
+            var spinDuration = 4000 + Math.random() * 3000;
+            var spinAmount = Math.random() * 4 + 12;
+            var startRotation = currentRotation;
+            var startTime = Date.now();
+            
+            function animate() {
+                var elapsed = Date.now() - startTime;
+                var progress = Math.min(elapsed / spinDuration, 1);
+                
+                var easeOut = 1 - Math.pow(1 - progress, 4);
+                currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
+                
+                drawWheel();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    var winner = determineWinner();
+                    
+                    lastWinner = winner;
+                    showWinner(winner);
+                    
+                    isSpinning = false;
+                    document.getElementById('spinBtn').disabled = false;
+                    document.getElementById('statusText').textContent = 'Winner: ' + winner;
+                }
+            }
+            
+            animate();
         }
 
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        } else {
-            var winner = determineWinner();
-
-            lastWinner = winner;
-            showWinner(winner);
-
-            isSpinning = false;
-            document.getElementById('spinBtn').disabled = false;
-            document.getElementById('statusText').textContent = 'Winner: ' + winner;
-        }
-    }
-
-    animate();
-}
-
-function determineWinner() {
+        function determineWinner() {
             var weightedSegments = createWeightedSegments();
             var totalWeight = 0;
             for (var i = 0; i < weightedSegments.length; i++) {
@@ -1127,44 +1094,38 @@ function determineWinner() {
             }, 5000);
         }
 
-        
+        function addParticipant(username) {
+            if (!username) {
+                username = document.getElementById('usernameInput').value.trim();
+            }
+            
+            if (username && participants.indexOf(username) === -1) {
+                participants.push(username);
+                updateParticipantsList();
+                updateWeightsList();
+                drawWheel();
+                document.getElementById('usernameInput').value = '';
+                document.getElementById('statusText').textContent = participants.length + ' participants ready!';
+            }
+        }
 
-function addParticipant(username) {
-    if (!username) {
-        username = document.getElementById('usernameInput').value.trim();
-    }
-    if (!username || typeof username !== "string") return;
-    username = username.toString().trim();
-    if (!username) return;
+        function removeParticipant(username) {
+            var index = participants.indexOf(username);
+            if (index > -1) {
+                participants.splice(index, 1);
+                updateParticipantsList();
+                updateWeightsList();
+                drawWheel();
+                
+                if (participants.length === 0) {
+                    document.getElementById('statusText').textContent = 'Add participants to get started!';
+                } else {
+                    document.getElementById('statusText').textContent = participants.length + ' participants ready!';
+                }
+            }
+        }
 
-    // Always add as a separate slice (string)
-    participants.push(username);
-    participantEntries.set(username, (participantEntries.get(username) || 0) + 1);
-    participantWeights.set(username, 1);
-
-    updateParticipantsList();
-    updateWeightsList();
-    drawWheel();
-
-    document.getElementById('usernameInput').value = '';
-}
-
-    if (!username) return;
-
-    // Always add as a separate slice
-    participants.push({ name: username, weight: 1 });
-    participantEntries.set(username, (participantEntries.get(username) || 0) + 1);
-    participantWeights.set(username, 1);
-
-    updateParticipantsList();
-    updateWeightsList();
-    drawWheel();
-
-    document.getElementById('usernameInput').value = '';
-    document.getElementById('statusText').textContent = participants.length + ' participants ready!';
-
-
-function updateParticipantsList() {
+        function updateParticipantsList() {
             var list = document.getElementById('participantsList');
             var count = document.getElementById('participantCount');
             
@@ -1234,41 +1195,7 @@ function updateParticipantsList() {
             setupAppEventListeners();
         }
 
-        
-    function clearWheel() {
-        if (participants.length === 0) return;
-        if (confirm('Remove all participants?')) {
-            participants = [];
-            lastWinner = null;
-            participantCooldown.clear();
-            updateParticipantsList();
-            updateWeightsList();
-            drawWheel();
-            document.getElementById('statusText').textContent = 'Wheel cleared!';
-        }
-    }
-
-    function removeWinner() {
-        if (lastWinner && participants.indexOf(lastWinner) !== -1) {
-            removeParticipant(lastWinner);
-            lastWinner = null;
-            document.getElementById('statusText').textContent = 'Winner removed!';
-        }
-    }
-
-function setupAppEventListeners() {
-    var usernameInput = document.getElementById('usernameInput');
-    if (usernameInput) {
-        usernameInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addParticipant(usernameInput.value.trim());
-                usernameInput.value = '';
-                usernameInput.focus();
-            }
-        });
-    }
-
+        function setupAppEventListeners() {
             var spinBtn = document.getElementById('spinBtn');
             var logoutBtn = document.getElementById('logoutBtn');
             var connectBtn = document.getElementById('connectBtn');
@@ -1531,23 +1458,16 @@ function setupAppEventListeners() {
                 }
 
                 if (username && message) {
-    if (message.toLowerCase() === entryKeyword.toLowerCase()) {
-        handleChatEntry(username, isModerator);
-    }
-    if (isModerator) {
-        if (message.toLowerCase() === '!spin') {
-            spinWheel();
-            showNotification(username + ' spun the wheel!', 'var(--accent-primary)');
-        }
-        else if (message.toLowerCase().indexOf('!addentry ') === 0) {
-            handleAddEntryCommand(message, username);
-        }
-        else if (message.toLowerCase().indexOf('!weight ') === 0) {
-            handleWeightCommand(message, username);
+                    if (message.toLowerCase() === entryKeyword.toLowerCase()) {
+                        handleChatEntry(username, isModerator);
+                    }
+                    if (message.toLowerCase() === '!spin' && isModerator) {
+                        spinWheel();
+                        showNotification(username + ' spun the wheel!', 'var(--accent-primary)');
+                    }
+                }
             }
         }
-    }
-}              
 
         function handleChatEntry(username, isModerator) {
             var now = Date.now();
@@ -1604,70 +1524,6 @@ function setupAppEventListeners() {
                 document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
-    
-        
-function handleAddEntryCommand(message, username) {
-    var parts = message.split(' ');
-    if (parts.length < 2) return;
-
-    var newUser = parts[1].trim();
-    if (!newUser) return;
-
-    participants.push(newUser);
-    participantEntries.set(newUser, (participantEntries.get(newUser) || 0) + 1);
-    participantWeights.set(newUser, 1);
-
-    updateParticipantsList();
-    updateWeightsList();
-    drawWheel();
-
-    showNotification(newUser + ' added by ' + username, 'var(--success-color)');
-}
-
-            }
-
-            // Add new participant objects
-            for (var i = 0; i < count; i++) {
-                participants.push({ name: targetUser, weight: 1 });
-            }
-
-            updateParticipantsList();
-            updateWeightsList();
-            drawWheel();
-
-            showNotification(modUsername + ' added ' + count + ' entries for ' + targetUser, 'var(--success-color)');
-            document.getElementById('statusText').textContent = participants.length + ' participants ready!';
-        
-
-
-        
-function handleWeightCommand(message, username) {
-    var parts = message.split(' ');
-    if (parts.length < 3) return;
-
-    var targetUser = parts[1].trim();
-    var newWeight = parseInt(parts[2], 10);
-    if (!targetUser || isNaN(newWeight) || newWeight < 1) return;
-
-    // Ensure targetUser exists in participants list
-    if (participants.indexOf(targetUser) !== -1) {
-        participantWeights.set(targetUser, newWeight);
-        updateWeightsList();
-        drawWheel();
-        showNotification(username + ' set ' + targetUser + ' weight to ' + newWeight, 'var(--accent-primary)');
-    }
-}
-
-            
-
-            if (updated) {
-                updateWeightsList();
-                drawWheel();
-                showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
-            }
-        
-
-
-</script>
+    </script>
 </body>
 </html>
