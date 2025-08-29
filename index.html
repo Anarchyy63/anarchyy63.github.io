@@ -382,6 +382,7 @@
 
         .settings-content {
             background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
             padding: 30px;
             border-radius: 20px;
             border: 1px solid var(--border-color);
@@ -390,6 +391,7 @@
             max-height: 80vh;
             overflow-y: auto;
             width: 90%;
+            opacity: 0.95;
         }
 
         .settings-header {
@@ -657,6 +659,7 @@
         var useCustomColors = false;
         var customColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
         var participantWeights = new Map();
+        var participantEntries = new Map(); // Track how many times each participant entered
         var audioContext = null;
         var soundsEnabled = true;
         var currentTickOscillator = null;
@@ -862,11 +865,11 @@
             
             if (body.getAttribute('data-theme') === 'dark') {
                 body.setAttribute('data-theme', 'light');
-                themeToggle.textContent = 'Light Mode';
+                themeToggle.textContent = '☀️ Light Mode';
                 localStorage.setItem('theme', 'light');
             } else {
                 body.setAttribute('data-theme', 'dark');
-                themeToggle.textContent = 'Dark Mode';
+                themeToggle.textContent = '🌙 Dark Mode';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -886,21 +889,96 @@
             soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
             updateSoundToggle();
             
-            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-                audioContext = new (AudioContext || webkitAudioContext)();
-            }
+            // Initialize audio context on user interaction
+            document.addEventListener('click', function initAudioContext() {
+                if (!audioContext) {
+                    try {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        console.log('Audio context initialized');
+                    } catch (e) {
+                        console.log('Audio not supported');
+                    }
+                }
+            }, { once: true });
         }
 
         function toggleSound() {
             soundsEnabled = !soundsEnabled;
             localStorage.setItem('soundsEnabled', soundsEnabled.toString());
             updateSoundToggle();
+            
+            // Test sound when enabling
+            if (soundsEnabled) {
+                playTickSound();
+            }
         }
 
         function updateSoundToggle() {
             var soundToggle = document.getElementById('soundToggleBtn');
             if (soundToggle) {
-                soundToggle.textContent = soundsEnabled ? 'Sound On' : 'Sound Off';
+                soundToggle.textContent = soundsEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+            }
+        }
+
+        function playTickSound() {
+            if (!soundsEnabled || !audioContext) return;
+            
+            try {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                var oscillator = audioContext.createOscillator();
+                var gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+                
+            } catch (error) {
+                console.log('Audio playback failed:', error);
+            }
+        }
+
+        function playCongratsSound() {
+            if (!soundsEnabled || !audioContext) return;
+            
+            try {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // Play a celebration melody
+                var frequencies = [523, 659, 784, 1047];
+                for (var i = 0; i < frequencies.length; i++) {
+                    var oscillator = audioContext.createOscillator();
+                    var gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(frequencies[i], audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    
+                    var startTime = audioContext.currentTime + (i * 0.15);
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.3);
+                }
+                
+            } catch (error) {
+                console.log('Congratulations sound failed:', error);
             }
         }
 
