@@ -1276,6 +1276,18 @@ function updateParticipantsList() {
         }
 
         function setupAppEventListeners() {
+    var usernameInput = document.getElementById('usernameInput');
+    if (usernameInput) {
+        usernameInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addParticipant(usernameInput.value.trim());
+                usernameInput.value = '';
+                usernameInput.focus();
+            }
+        });
+    }
+
             var spinBtn = document.getElementById('spinBtn');
             var logoutBtn = document.getElementById('logoutBtn');
             var connectBtn = document.getElementById('connectBtn');
