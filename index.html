@@ -147,6 +147,7 @@
             background: var(--text-primary);
         
             display: block;
+        
             margin: 0 auto;
         }
 
@@ -1204,7 +1205,7 @@
                     let username, message, isModerator = false, isBroadcaster = false;
                     
                     if (line.startsWith('@')) {
-                        const tagMatch = line.match(/^@([^:]+):(.+)$/);
+                        const tagMatch = line.match(/^@([^:]+)\s*:(.+)$/);
                         if (tagMatch) {
                             const tags = tagMatch[1];
                             const rest = tagMatch[2];
