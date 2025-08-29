@@ -648,7 +648,8 @@
         var currentRotation = 0;
         var twitchSocket = null;
         var isConnected = false;
-        var lastWinner = null;
+        var lastWinner =
+            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
         var entryKeyword = '!enter';
         var participantCooldown = new Map();
         var accessToken = null;
@@ -1133,7 +1134,8 @@
         } else {
             var winner = determineWinner();
 
-            lastWinner = winner;
+            lastWinner =
+            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound winner;
             showWinner(winner);
 
             isSpinning = false;
@@ -1190,12 +1192,28 @@ function addParticipant(username) {
     if (!username) {
         username = document.getElementById('usernameInput').value.trim();
     }
+    if (!username || typeof username !== "string") return;
+    username = username.toString().trim();
+    if (!username) return;
+    
+    if (participants.indexOf(username) === -1) {
+        participants.push(username.toString());
+        participantEntries.set(username.toString(), 1);
+    } else if (allowMultipleEntries) {
+        let currentEntries = participantEntries.get(username) || 1;
+        participantEntries.set(username.toString(), currentEntries + 1);
+    }
+    updateParticipantsList();
+    updateWeightsList();
+    drawWheel();
+    document.getElementById('usernameInput').value = '';
+}
     if (!username) return;
 
     // Always add as a separate slice
     participants.push({ name: username, weight: 1 });
-    participantEntries.set(username, (participantEntries.get(username) || 0) + 1);
-    participantWeights.set(username, 1);
+    participantEntries.set(username.toString(), (participantEntries.get(username) || 0) + 1);
+    participantWeights.set(username.toString(), 1);
 
     updateParticipantsList();
     updateWeightsList();
@@ -1280,7 +1298,8 @@ function updateParticipantsList() {
         if (participants.length === 0) return;
         if (confirm('Remove all participants?')) {
             participants = [];
-            lastWinner = null;
+            lastWinner =
+            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
             participantCooldown.clear();
             updateParticipantsList();
             updateWeightsList();
@@ -1292,7 +1311,8 @@ function updateParticipantsList() {
     function removeWinner() {
         if (lastWinner && participants.indexOf(lastWinner) !== -1) {
             removeParticipant(lastWinner);
-            lastWinner = null;
+            lastWinner =
+            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
             document.getElementById('statusText').textContent = 'Winner removed!';
         }
     }
@@ -1309,14 +1329,13 @@ const usernameInput = document.getElementById('usernameInput');
 
 // Enter key in input box
 if (usernameInput) {
-    usernameInput.addEventListener('keypress', function (e) {
+    usernameInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             const name = this.value.trim();
             if (name) addParticipant(name);
         }
     });
-}('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const name = this.value.trim();
@@ -1338,7 +1357,6 @@ if (usernameInput) {
             var spinBtn = document.getElementById('spinBtn');
             var logoutBtn = document.getElementById('logoutBtn');
             var connectBtn = document.getElementById('connectBtn');
-            var addParticipantBtn = 
             
             if (spinBtn) spinBtn.onclick = spinWheel;
             if (logoutBtn) logoutBtn.onclick = logout;
@@ -1669,7 +1687,7 @@ if (usernameInput) {
             
             if (participants.indexOf(username) === -1) {
                 // First time entry - anyone can enter
-                participants.push(username);
+                participants.push(username.toString());
                 participantCooldown.set(username, now);
                 updateParticipantsList();
                 updateWeightsList();
@@ -1680,7 +1698,7 @@ if (usernameInput) {
             } else if (allowMultipleEntries && isModerator) {
                 // Multiple entries - only allowed for moderators
                 var currentWeight = participantWeights.get(username) || 1;
-                participantWeights.set(username, currentWeight + 1);
+                participantWeights.set(username.toString(), currentWeight + 1);
                 participantCooldown.set(username, now);
                 updateWeightsList();
                 drawWheel();
@@ -1696,7 +1714,8 @@ if (usernameInput) {
             
             if (confirm('Remove all participants?')) {
                 participants = [];
-                lastWinner = null;
+                lastWinner =
+            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
                 participantCooldown.clear();
                 updateParticipantsList();
                 updateWeightsList();
@@ -1708,7 +1727,8 @@ if (usernameInput) {
         function removeWinner() {
             if (lastWinner && participants.indexOf(lastWinner) !== -1) {
                 removeParticipant(lastWinner);
-                lastWinner = null;
+                lastWinner =
+            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
                 document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
