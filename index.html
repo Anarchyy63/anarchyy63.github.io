@@ -1171,250 +1171,103 @@
             document.getElementById('connectBtn').disabled = false;
         }
 
-        function handleTwitchMessage(rawMessage) {
-            const lines = rawMessage.split('\r\n');
-            
-            for (let line of lines) {
-                if (!line) continue;
-                
-                console.log('IRC:', line);
-                
-                if (line.startsWith('PING')) {
-                    twitchSocket.send('PONG :tmi.twitch.tv\r\n');
-                    continue;
-                }
-                
-                if (line.includes('001') || line.includes('Welcome')) {
-                    console.log('✅ Successfully authenticated with Twitch IRC');
-                    updateConnectionStatus('Authenticated', 'warning');
-                }
-                
-                if (line.includes(`366`) && line.includes(`#${userInfo.login}`)) {
-                    isConnected = true;
-                    updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
-                    document.getElementById('connectBtn').textContent = '🔌 Disconnect';
-                    document.getElementById('connectBtn').disabled = false;
-                    document.getElementById('connectBtn').onclick = disconnectFromTwitch;
-                    console.log(`✅ Successfully joined #${userInfo.login}`);
-                    
-                    // Don't try to fetch moderators - requires special permissions
-                }
-                
-                // Parse chat messages with user badges/tags
-                if (line.includes('PRIVMSG')) {
-                    let username, message, isModerator = false, isBroadcaster = false;
-                    
-                    if (line.startsWith('@')) {
-                        const tagMatch = line.match(/^@([^:]+)\s*:(.+)$/);
-                        if (tagMatch) {
-                            const tags = tagMatch[1];
-                            const rest = tagMatch[2];
-                            
-                            if (tags.includes('badges=')) {
-                                const badgesMatch = tags.match(/badges=([^;]*)/);
-                                if (badgesMatch) {
-                                    const badges = badgesMatch[1];
-                                    isModerator = badges.includes('moderator') || badges.includes('broadcaster');
-                                    isBroadcaster = badges.includes('broadcaster');
-                                }
-                            }
-                            
-                            const msgMatch = rest.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                            if (msgMatch) {
-                                username = msgMatch[1];
-                                message = msgMatch[2].trim();
-                            }
-                        }
-                    } else {
-                        const match = line.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                        if (match) {
-                            username = match[1];
-                            message = match[2].trim();
-                            isBroadcaster = username.toLowerCase() === userInfo.login.toLowerCase();
-                            isModerator = isBroadcaster;
-                        }
-                    }
-                    
-                    if (username && message) {
-                        console.log(`Chat: ${username}: ${message} (mod: ${isModerator})`);
-                        
-                        if (message.toLowerCase() === entryKeyword.toLowerCase()) {
-                            handleChatEntry(username);
-                        }
-                        
-                        if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
-                            console.log(`Moderator ${username} triggered spin command`);
-                            spinWheel();
-                            
-                            const notification = document.createElement('div');
-                            notification.className = 'entry-notification';
-                            notification.innerHTML = `🎯 ${username} spun the wheel!`;
-                            notification.style.background = 'var(--accent-primary)';
-                            document.body.appendChild(notification);
-                            
-                            setTimeout(() => {
-                                if (document.body.contains(notification)) {
-                                    document.body.removeChild(notification);
-                                }
-                            }, 3000);
-                        }
-                    }
-                }
-            }
+       function handleTwitchMessage(rawMessage) {
+    const lines = rawMessage.split('\r\n');
+    for (let line of lines) {
+        if (!line) continue;
+
+        console.log('IRC:', line);
+
+        // Respond to PING
+        if (line.startsWith('PING')) {
+            twitchSocket.send('PONG :tmi.twitch.tv\r\n');
+            continue;
         }
 
-        function handleChatEntry(username) {
-            const now = Date.now();
-            const cooldownTime = 5000;
-            
-            if (participantCooldown.has(username)) {
-                const lastEntry = participantCooldown.get(username);
-                if (now - lastEntry < cooldownTime) {
-                    console.log(`${username} is on cooldown, ignoring entry`);
-                    return;
-                }
-            }
-            
-            if (!participants.includes(username)) {
-                participants.push(username);
-                participantCooldown.set(username, now);
-                updateParticipantsList();
-                drawWheel();
-                
-                console.log(`✅ ${username} entered the giveaway!`);
-                document.getElementById('statusText').textContent = `${participants.length} participants ready! Latest: ${username}`;
-                
-                showEntryNotification(username);
-            } else {
-                console.log(`${username} already entered`);
-            }
+        // Successful login
+        if (line.includes('001') || line.includes('Welcome')) {
+            console.log('✅ Successfully authenticated with Twitch IRC');
+            updateConnectionStatus('Authenticated', 'warning');
         }
 
-        function showEntryNotification(username) {
-            const notification = document.createElement('div');
-            notification.className = 'entry-notification';
-            notification.innerHTML = `🎯 ${username} entered!`;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 3000);
+        // Successful join
+        if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
+            isConnected = true;
+            updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
+            document.getElementById('connectBtn').textContent = '🔌 Disconnect';
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('connectBtn').onclick = disconnectFromTwitch;
+            console.log(`✅ Successfully joined #${userInfo.login}`);
         }
 
-        // Check for special modes
-        function checkSpecialModes() {
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            if (urlParams.get('transparent') === 'true') {
-                document.body.classList.add('transparent-mode');
-                return true;
-            }
-            
-            if (urlParams.get('crop') === 'true') {
-                document.body.classList.add('crop-mode');
-                return true;
-            }
-            
-            return false;
-        }
-        
-        // Initialize app
-        window.addEventListener('load', function() {
-            console.log('Page loaded, initializing...');
-            initializeTheme();
-            initializeAudio();
-            
-            // Set up event listeners with error checking
-            setupEventListeners();
-            
-            // Check for special modes first
-            if (!checkSpecialModes()) {
-                checkForToken();
-            } else {
-                const storedToken = localStorage.getItem('twitch_token');
-                if (storedToken) {
-                    accessToken = storedToken;
-                    validateToken();
-                } else {
-                    showAppSection();
-                }
-            }
-        });
+        // Handle chat messages
+        if (line.includes('PRIVMSG')) {
+            let username = null;
+            let message = null;
+            let isModerator = false;
+            let isBroadcaster = false;
 
-        function setupEventListeners() {
-            console.log('Setting up event listeners...');
-            
-            // Theme and sound toggles (always visible)
-            const themeToggleBtn = document.getElementById('themeToggleBtn');
-            const soundToggleBtn = document.getElementById('soundToggleBtn');
-            
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', toggleTheme);
-                console.log('Theme toggle listener added');
-            }
-            
-            if (soundToggleBtn) {
-                soundToggleBtn.addEventListener('click', toggleSound);
-                console.log('Sound toggle listener added');
-            }
-            
-            // Auth section button
-            const twitchLoginBtn = document.getElementById('twitchLoginBtn');
-            if (twitchLoginBtn) {
-                twitchLoginBtn.addEventListener('click', loginWithTwitch);
-                console.log('Twitch login listener added');
-            }
-            
-            // App section buttons (may not be visible initially)
-            const spinBtn = document.getElementById('spinBtn');
-            const usernameInput = document.getElementById('usernameInput');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const connectBtn = document.getElementById('connectBtn');
-            const addParticipantBtn = document.getElementById('addParticipantBtn');
-            const clearWheelBtn = document.getElementById('clearWheelBtn');
-            const removeWinnerBtn = document.getElementById('removeWinnerBtn');
-
-            if (spinBtn) {
-                spinBtn.addEventListener('click', spinWheel);
-                console.log('Spin button listener added');
-            }
-            
-            if (usernameInput) {
-                usernameInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        addParticipant();
-                    }
+            // --- Parse tags ---
+            let tags = {};
+            if (line.startsWith('@')) {
+                const [tagSection, ...restArr] = line.split(' ');
+                tagSection.slice(1).split(';').forEach(pair => {
+                    const [key, value] = pair.split('=');
+                    tags[key] = value;
                 });
-                console.log('Username input listener added');
             }
-            
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', logout);
-                console.log('Logout listener added');
+
+            // --- Extract username + message (colon-aware) ---
+            const msgMatch = line.match(/:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #[^ ]+ :(.*)/);
+            if (msgMatch) {
+                username = msgMatch[1];
+                message = msgMatch[2].trim();
             }
-            
-            if (connectBtn) {
-                connectBtn.addEventListener('click', connectToTwitch);
-                console.log('Connect button listener added');
+
+            // --- Check badges for mod/broadcaster ---
+            if (tags.badges) {
+                isModerator = tags.badges.includes('moderator') || tags.badges.includes('broadcaster');
+                isBroadcaster = tags.badges.includes('broadcaster');
             }
-            
-            if (addParticipantBtn) {
-                addParticipantBtn.addEventListener('click', addParticipant);
-                console.log('Add participant listener added');
+            // fallback: compare username to channel owner
+            if (username && username.toLowerCase() === userInfo.login.toLowerCase()) {
+                isBroadcaster = true;
+                isModerator = true;
             }
-            
-            if (clearWheelBtn) {
-                clearWheelBtn.addEventListener('click', clearWheel);
-                console.log('Clear wheel listener added');
+            // extra fallback: mod=1 in tags
+            if (tags.mod === '1') {
+                isModerator = true;
             }
-            
-            if (removeWinnerBtn) {
-                removeWinnerBtn.addEventListener('click', removeWinner);
-                console.log('Remove winner listener added');
+
+            // --- Handle commands ---
+            if (username && message) {
+                console.log(`Chat: ${username}: ${message} (mod:${isModerator}, bc:${isBroadcaster})`);
+
+                // Entry keyword (anyone can enter)
+                if (message.toLowerCase() === entryKeyword.toLowerCase()) {
+                    handleChatEntry(username);
+                }
+
+                // Spin (mods/broadcaster only)
+                if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
+                    console.log(`Moderator ${username} triggered spin command`);
+                    spinWheel();
+
+                    const notification = document.createElement('div');
+                    notification.className = 'entry-notification';
+                    notification.innerHTML = `🎯 ${username} spun the wheel!`;
+                    notification.style.background = 'var(--accent-primary)';
+                    document.body.appendChild(notification);
+
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 3000);
+                }
             }
         }
-    </script>
+    }
+}
 </body>
 </html>
