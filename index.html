@@ -1,3 +1,11 @@
+
+function playCelebrationSound() {
+    if (typeof soundsEnabled !== 'undefined' && soundsEnabled && typeof celebrationSound !== 'undefined' && celebrationSound) {
+        celebrationSound.currentTime = 0;
+        celebrationSound.play().catch(err => console.warn("Sound play blocked:", err));
+    }
+}
+
 <!DOCTYPE html>
 <html lang="en">
  <head>
@@ -1283,15 +1291,17 @@ function determineWinner() {
         }
 
         function addParticipant(username) {
-    if (typeof username !== 'string') {
+    if (!username) {
         username = document.getElementById('usernameInput').value.trim();
     }
     if (!username) return;
 
     if (participants.indexOf(username) === -1) {
+        // New participant
         participants.push(username);
         participantEntries.set(username, 1);
-    } else if (allowMultipleEntries) {
+    } else {
+        // Instead of adding another entry to participants[], increment entries
         var currentEntries = participantEntries.get(username) || 1;
         participantEntries.set(username, currentEntries + 1);
     }
@@ -1299,12 +1309,17 @@ function determineWinner() {
     updateParticipantsList();
     updateWeightsList();
     drawWheel();
-    document.getElementById('usernameInput').value = '';
 
-    var totalEntries = participantEntries.get(username) || 1;
-    document.getElementById('statusText').textContent =
-        participants.length + ' participants ready!' +
-        (totalEntries > 1 ? ' ' + username + ' entries: ' + totalEntries : '');
+    document.getElementById('usernameInput').value = '';
+    var totalEntries = participantEntries.get(username);
+    if (totalEntries > 1) {
+        document.getElementById('statusText').textContent =
+            participants.length + ' participants ready! ' +
+            username + ' entries: ' + totalEntries;
+    } else {
+        document.getElementById('statusText').textContent =
+            participants.length + ' participants ready!';
+    }
 }
             
             function removeParticipant(username) {
@@ -1676,6 +1691,53 @@ function determineWinner() {
 
         }
 
+
+function handleAddEntryCommand(message, modUsername) {
+    var parts = message.split(' ');
+    if (parts.length < 2) return;
+    var targetUser = parts[1];
+    var count = 1;
+    if (parts.length >= 3) {
+        var parsedCount = parseInt(parts[2]);
+        if (!isNaN(parsedCount) && parsedCount > 0 && parsedCount <= 10) {
+            count = parsedCount;
+        }
+    }
+
+    // Add the user if they don't exist
+    if (participants.indexOf(targetUser) === -1) {
+        participants.push(targetUser);
+        participantEntries.set(targetUser, count);
+    } else {
+        // Add to existing entries
+        var currentEntries = participantEntries.get(targetUser) || 1;
+        participantEntries.set(targetUser, currentEntries + count);
+    }
+
+    updateParticipantsList();
+    updateWeightsList();
+    drawWheel();
+
+    var totalEntries = participantEntries.get(targetUser);
+    showNotification(modUsername + ' added ' + count + ' entries for ' + targetUser + ' (total: ' + totalEntries + ')', 'var(--success-color)');
+    document.getElementById('statusText').textContent = participants.length + ' participants ready!';
+}
+
+function handleWeightCommand(message, modUsername) {
+    var parts = message.split(' ');
+    if (parts.length < 3) return;
+    var targetUser = parts[1];
+    var weight = parseFloat(parts[2]);
+    if (isNaN(weight) || weight < 0.1 || weight > 10) return;
+
+    if (participants.indexOf(targetUser) !== -1) {
+        participantWeights.set(targetUser, weight);
+        updateWeightsList();
+        drawWheel();
+        showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
+    }
+}
+
 function handleChatEntry(username, isModerator) {
             var now = Date.now();
             
@@ -1731,6 +1793,14 @@ function handleChatEntry(username, isModerator) {
                 document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
-  </script>
+  
+document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addParticipant(this.value.trim());
+    }
+});
+
+</script>
  </body>
 </html>
