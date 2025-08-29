@@ -1302,13 +1302,12 @@ function setupAppEventListeners() {
 const addBtn = document.getElementById('addParticipantBtn');
 if (addBtn) {
     addBtn.addEventListener('click', function () {
-        const name = document.getElementById('usernameInput').value.trim();
+const usernameInput = document.getElementById('usernameInput');
         if (name) addParticipant(name);
     });
 }
 
 // Enter key in input box
-const usernameInput = document.getElementById('usernameInput');
 if (usernameInput) {
     usernameInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
@@ -1325,7 +1324,6 @@ if (usernameInput) {
             }
         });
 
-    var usernameInput = document.getElementById('usernameInput');
     if (usernameInput) {
         usernameInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
