@@ -30,9 +30,9 @@
             --text-secondary: #6c757d;
             --accent-primary: #9146ff;
             --accent-secondary: #0066cc;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --error-color: #dc3545;
+            --success-col: #28a745;
+            --warning-col: #ffc107;
+            --err-color: #dc3545;
             --border-color: rgba(0, 0, 0, 0.2);
             --shadow-color: rgba(0, 0, 0, 0.1);
         }
@@ -1226,7 +1226,7 @@
 
             // --- Check badges for mod/broadcaster ---
             if (tags.badges) {
-                isModerator = tags.badges.includes('moderator') or tags.badges.includes('broadcaster');
+                isModerator = tags.badges.includes('moderator') || tags.badges.includes('broadcaster');
                 isBroadcaster = tags.badges.includes('broadcaster');
             }
             if (username && username.toLowerCase() === userInfo.login.toLowerCase()) {
