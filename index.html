@@ -1275,7 +1275,29 @@ function updateParticipantsList() {
             setupAppEventListeners();
         }
 
-        function setupAppEventListeners() {
+        
+    function clearWheel() {
+        if (participants.length === 0) return;
+        if (confirm('Remove all participants?')) {
+            participants = [];
+            lastWinner = null;
+            participantCooldown.clear();
+            updateParticipantsList();
+            updateWeightsList();
+            drawWheel();
+            document.getElementById('statusText').textContent = 'Wheel cleared!';
+        }
+    }
+
+    function removeWinner() {
+        if (lastWinner && participants.indexOf(lastWinner) !== -1) {
+            removeParticipant(lastWinner);
+            lastWinner = null;
+            document.getElementById('statusText').textContent = 'Winner removed!';
+        }
+    }
+
+function setupAppEventListeners() {
     var usernameInput = document.getElementById('usernameInput');
     if (usernameInput) {
         usernameInput.addEventListener('keydown', function(e) {
