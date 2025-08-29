@@ -478,12 +478,12 @@
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-
+            
             #wheelCanvas {
                 width: 300px;
                 height: 300px;
             }
-
+            
             .header h1 {
                 font-size: 2rem;
             }
@@ -525,7 +525,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div class="controls-section">
             <div id="userInfo" class="user-info">
                 <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
@@ -537,9 +537,9 @@
             </div>
 
             <h3>🎮 Giveaway Settings</h3>
-
+            
             <input type="text" id="keywordInput" placeholder="Entry keyword (e.g., !enter)" value="!enter">
-
+            
             <button id="connectBtn" class="primary-btn">🔗 Connect to Chat</button>
             <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
                 Status: <span id="chatStatus">Disconnected</span>
@@ -551,10 +551,10 @@
             </div>
 
             <h3 style="margin-top: 30px;">⚙️ Manual Controls</h3>
-
+            
             <input type="text" id="usernameInput" placeholder="Add username manually">
             <button id="addParticipantBtn" class="secondary-btn">➕ Add Participant</button>
-
+            
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">🗑️ Clear All</button>
                 <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">❌ Remove Winner</button>
@@ -582,7 +582,7 @@
                 <h3>Wheel Settings</h3>
                 <button class="settings-close" id="settingsCloseBtn">×</button>
             </div>
-
+            
             <div class="settings-section">
                 <h4>General Settings</h4>
                 <div class="setting-item">
@@ -649,8 +649,6 @@
         var twitchSocket = null;
         var isConnected = false;
         var lastWinner = null;
-            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
-                console.log("Winner chosen, playing celebration sound");
         var entryKeyword = '!enter';
         var participantCooldown = new Map();
         var accessToken = null;
@@ -717,19 +715,19 @@
         function updateColorList() {
             var colorList = document.getElementById('colorList');
             colorList.innerHTML = '';
-
+            
             for (var i = 0; i < customColors.length; i++) {
                 var color = customColors[i];
                 var item = document.createElement('div');
                 item.className = 'setting-item';
-
+                
                 var labelDiv = document.createElement('div');
                 labelDiv.className = 'setting-label';
                 labelDiv.textContent = 'Color ' + (i + 1);
-
+                
                 var controlDiv = document.createElement('div');
                 controlDiv.className = 'setting-control';
-
+                
                 var colorInput = document.createElement('input');
                 colorInput.type = 'color';
                 colorInput.value = color;
@@ -740,7 +738,7 @@
                     customColors[index] = this.value;
                     if (useCustomColors) drawWheel();
                 };
-
+                
                 var removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-btn';
                 removeBtn.textContent = '×';
@@ -753,7 +751,7 @@
                         if (useCustomColors) drawWheel();
                     }
                 };
-
+                
                 controlDiv.appendChild(colorInput);
                 controlDiv.appendChild(removeBtn);
                 item.appendChild(labelDiv);
@@ -765,26 +763,26 @@
         function updateWeightsList() {
             var weightsList = document.getElementById('weightsList');
             weightsList.innerHTML = '';
-
+            
             for (var i = 0; i < participants.length; i++) {
                 var participant = participants[i];
                 var participantWeight = participantWeights.get(participant) || 1;
-
+                
                 var item = document.createElement('div');
                 item.className = 'setting-item';
-
+                
                 var labelDiv = document.createElement('div');
                 labelDiv.className = 'setting-label';
                 labelDiv.textContent = participant;
-
+                
                 var controlDiv = document.createElement('div');
                 controlDiv.className = 'setting-control';
-
+                
                 var label = document.createElement('label');
                 label.style.fontSize = '12px';
                 label.style.color = 'var(--text-secondary)';
                 label.textContent = 'Weight:';
-
+                
                 var weightInput = document.createElement('input');
                 weightInput.type = 'number';
                 weightInput.value = participantWeight;
@@ -799,7 +797,7 @@
                     participantWeights.set(participant, newWeight);
                     drawWheel();
                 };
-
+                
                 controlDiv.appendChild(label);
                 controlDiv.appendChild(weightInput);
                 item.appendChild(labelDiv);
@@ -819,7 +817,7 @@
             allowMultipleEntries = document.getElementById('allowMultipleEntries').checked;
             entryCooldownTime = parseInt(document.getElementById('entryCooldown').value) * 1000;
             useCustomColors = document.getElementById('useCustomColors').checked;
-
+            
             var settings = {
                 allowMultipleEntries: allowMultipleEntries,
                 entryCooldownTime: entryCooldownTime,
@@ -827,7 +825,7 @@
                 customColors: customColors,
                 participantWeights: Array.from(participantWeights.entries())
             };
-
+            
             localStorage.setItem('wheelSettings', JSON.stringify(settings));
             drawWheel();
             closeSettings();
@@ -864,7 +862,7 @@
         function toggleTheme() {
             var body = document.body;
             var themeToggle = document.getElementById('themeToggleBtn');
-
+            
             if (body.getAttribute('data-theme') === 'dark') {
                 body.setAttribute('data-theme', 'light');
                 themeToggle.textContent = '☀️ Light Mode';
@@ -892,7 +890,7 @@
         function initializeAudio() {
             soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
             updateSoundToggle();
-
+            
             // Initialize audio context on user interaction
             document.addEventListener('click', function initAudioContext() {
                 if (!audioContext) {
@@ -910,7 +908,7 @@
             soundsEnabled = !soundsEnabled;
             localStorage.setItem('soundsEnabled', soundsEnabled.toString());
             updateSoundToggle();
-
+            
             // Test sound when enabling
             if (soundsEnabled) {
                 playTickSound();
@@ -926,61 +924,54 @@
 
         function playTickSound() {
             if (!soundsEnabled || !audioContext) return;
-
+            
             try {
                 if (audioContext.state === 'suspended') {
                     audioContext.resume();
                 }
-
+                
                 var oscillator = audioContext.createOscillator();
                 var gainNode = audioContext.createGain();
-
+                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-
+                
                 oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
                 oscillator.type = 'sine';
-
+                
                 gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-
+                
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.1);
-
+                
             } catch (error) {
                 console.log('Audio playback failed:', error);
             }
         }
 
-        function playCongratsSound() {
-            if (!soundsEnabled || !audioContext) return;
-
-            try {
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-
+                        
                 // Play a celebration melody
                 var frequencies = [523, 659, 784, 1047];
                 for (var i = 0; i < frequencies.length; i++) {
                     var oscillator = audioContext.createOscillator();
                     var gainNode = audioContext.createGain();
-
+                    
                     oscillator.connect(gainNode);
                     gainNode.connect(audioContext.destination);
-
+                    
                     oscillator.frequency.setValueAtTime(frequencies[i], audioContext.currentTime);
                     oscillator.type = 'sine';
-
+                    
                     var startTime = audioContext.currentTime + (i * 0.15);
                     gainNode.gain.setValueAtTime(0, startTime);
                     gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
                     gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
-
+                    
                     oscillator.start(startTime);
                     oscillator.stop(startTime + 0.3);
                 }
-
+                
             } catch (error) {
                 console.log('Congratulations sound failed:', error);
             }
@@ -992,9 +983,9 @@
             var centerX = canvas.width / 2;
             var centerY = canvas.height / 2;
             var radius = 180;
-
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+            
             if (participants.length === 0) {
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
@@ -1003,7 +994,7 @@
                 ctx.strokeStyle = '#9146ff';
                 ctx.lineWidth = 3;
                 ctx.stroke();
-
+                
                 ctx.fillStyle = document.body.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#212529';
                 ctx.font = 'bold 18px Segoe UI';
                 ctx.textAlign = 'center';
@@ -1011,59 +1002,59 @@
                 ctx.fillText('to start!', centerX, centerY + 20);
                 return;
             }
-
+            
             var weightedSegments = createWeightedSegments();
             var totalWeight = 0;
             for (var i = 0; i < weightedSegments.length; i++) {
                 totalWeight += weightedSegments[i].weight;
             }
-
+            
             var currentAngle = currentRotation;
-
+            
             for (var i = 0; i < weightedSegments.length; i++) {
                 var segment = weightedSegments[i];
                 var segmentAngle = (segment.weight / totalWeight) * 2 * Math.PI;
                 var endAngle = currentAngle + segmentAngle;
-
+                
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, currentAngle, endAngle);
                 ctx.lineTo(centerX, centerY);
-
+                
                 var colors = useCustomColors && customColors.length > 0 ? customColors : wheelColors;
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.stroke();
-
+                
                 var textAngle = currentAngle + segmentAngle / 2;
                 var textRadius = radius * 0.7;
                 var textX = centerX + Math.cos(textAngle) * textRadius;
                 var textY = centerY + Math.sin(textAngle) * textRadius;
-
+                
                 ctx.save();
                 ctx.translate(textX, textY);
-
+                
                 var rotation = textAngle;
                 if (textAngle > Math.PI / 2 && textAngle < 3 * Math.PI / 2) {
                     rotation += Math.PI;
                 }
                 ctx.rotate(rotation);
-
+                
                 var textWidth = ctx.measureText(segment.name).width;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(-textWidth/2 - 4, -10, textWidth + 8, 20);
-
+                
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Segoe UI';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(segment.name, 0, 0);
-
+                
                 ctx.restore();
                 currentAngle = endAngle;
             }
-
+            
             ctx.beginPath();
             ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
             ctx.fillStyle = '#9146ff';
@@ -1071,7 +1062,7 @@
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 3;
             ctx.stroke();
-
+            
             ctx.beginPath();
             ctx.moveTo(centerX + radius - 18, centerY);
             ctx.lineTo(centerX + radius + 15, centerY - 12);
@@ -1136,10 +1127,6 @@
             var winner = determineWinner();
 
             lastWinner = winner;
-            if (typeof playCongratsSound === 'function') {
-                playCongratsSound();
-                console.log("Winner chosen, playing celebration sound");
-            }
             showWinner(winner);
 
             isSpinning = false;
@@ -1157,9 +1144,9 @@ function determineWinner() {
             for (var i = 0; i < weightedSegments.length; i++) {
                 totalWeight += weightedSegments[i].weight;
             }
-
+            
             var normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
-
+            
             var currentAngle = 0;
             for (var i = 0; i < weightedSegments.length; i++) {
                 var segment = weightedSegments[i];
@@ -1169,7 +1156,7 @@ function determineWinner() {
                 }
                 currentAngle += segmentAngle;
             }
-
+            
             return weightedSegments[0].name;
         }
 
@@ -1177,13 +1164,13 @@ function determineWinner() {
             var announcement = document.createElement('div');
             announcement.className = 'winner-announcement';
             announcement.innerHTML = '🎉 WINNER! 🎉<br>' + winner;
-
+            
             var wheelCanvas = document.getElementById('wheelCanvas');
             var wheelSection = wheelCanvas.parentElement;
-
+            
             wheelSection.style.position = 'relative';
             wheelSection.appendChild(announcement);
-
+            
             setTimeout(function() {
                 if (wheelSection.contains(announcement)) {
                     wheelSection.removeChild(announcement);
@@ -1191,7 +1178,7 @@ function determineWinner() {
             }, 5000);
         }
 
-
+        
 
 function addParticipant(username) {
     if (!username) {
@@ -1213,27 +1200,12 @@ function addParticipant(username) {
     document.getElementById('usernameInput').value = '';
 }
 
-    if (!username || typeof username !== "string") return;
-    username = username.toString().trim();
-    if (!username) return;
-
-    if (participants.indexOf(username) === -1) {
-        participants.push(username.toString());
-        participantEntries.set(username.toString(), 1);
-    } else if (allowMultipleEntries) {
-        let currentEntries = participantEntries.get(username) || 1;
-        participantEntries.set(username.toString(), currentEntries + 1);
-    }
-    updateParticipantsList();
-    updateWeightsList();
-    drawWheel();
-    document.getElementById('usernameInput').value = '';
     if (!username) return;
 
     // Always add as a separate slice
     participants.push({ name: username, weight: 1 });
-    participantEntries.set(username.toString(), (participantEntries.get(username) || 0) + 1);
-    participantWeights.set(username.toString(), 1);
+    participantEntries.set(username, (participantEntries.get(username) || 0) + 1);
+    participantWeights.set(username, 1);
 
     updateParticipantsList();
     updateWeightsList();
@@ -1246,10 +1218,10 @@ function addParticipant(username) {
 function updateParticipantsList() {
             var list = document.getElementById('participantsList');
             var count = document.getElementById('participantCount');
-
+            
             count.textContent = participants.length;
             list.innerHTML = '';
-
+            
             if (participants.length === 0) {
                 var p = document.createElement('p');
                 p.style.color = 'var(--text-secondary)';
@@ -1259,15 +1231,15 @@ function updateParticipantsList() {
                 list.appendChild(p);
                 return;
             }
-
+            
             for (var i = 0; i < participants.length; i++) {
                 var participant = participants[i];
                 var item = document.createElement('div');
                 item.className = 'participant-item';
-
+                
                 var span = document.createElement('span');
                 span.textContent = participant;
-
+                
                 var removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-btn';
                 removeBtn.textContent = '×';
@@ -1275,7 +1247,7 @@ function updateParticipantsList() {
                 removeBtn.onclick = function() {
                     removeParticipant(this.getAttribute('data-participant'));
                 };
-
+                
                 item.appendChild(span);
                 item.appendChild(removeBtn);
                 list.appendChild(item);
@@ -1299,32 +1271,26 @@ function updateParticipantsList() {
             document.getElementById('saveSettingsBtn').onclick = saveSettings;
             document.getElementById('resetSettingsBtn').onclick = resetSettings;
             document.getElementById('addColorBtn').onclick = addColor;
-
+            
             document.getElementById('useCustomColors').onchange = function() {
                 document.getElementById('colorSettings').style.display = this.checked ? 'block' : 'none';
             };
-
+            
             document.getElementById('settingsModal').onclick = function(e) {
                 if (e.target === this) closeSettings();
             };
-
+            
             document.getElementById('twitchLoginBtn').onclick = loginWithTwitch;
-
+            
             setupAppEventListeners();
         }
 
-
+        
     function clearWheel() {
         if (participants.length === 0) return;
         if (confirm('Remove all participants?')) {
             participants = [];
-lastWinner = winner;
-if (typeof playCongratsSound === 'function') {
-    playCongratsSound();
-    console.log("Winner chosen, playing celebration sound");
-}
-            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
-                console.log("Winner chosen, playing celebration sound");
+            lastWinner = null;
             participantCooldown.clear();
             updateParticipantsList();
             updateWeightsList();
@@ -1336,43 +1302,13 @@ if (typeof playCongratsSound === 'function') {
     function removeWinner() {
         if (lastWinner && participants.indexOf(lastWinner) !== -1) {
             removeParticipant(lastWinner);
-lastWinner = winner;
-if (typeof playCongratsSound === 'function') {
-    playCongratsSound();
-    console.log("Winner chosen, playing celebration sound");
-}
-            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
-                console.log("Winner chosen, playing celebration sound");
+            lastWinner = null;
             document.getElementById('statusText').textContent = 'Winner removed!';
         }
     }
 
 function setupAppEventListeners() {
-        // Add Participant button
-const addBtn = document.getElementById('addParticipantBtn');
-if (addBtn) {
-    addBtn.addEventListener('click', function () {
-const usernameInput = document.getElementById('usernameInput');
-        if (name) addParticipant(name);
-    });
-}
-
-// Enter key in input box
-if (usernameInput) {
-    usernameInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const name = this.value.trim();
-            if (name) addParticipant(name);
-        }
-    });
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const name = this.value.trim();
-                if (name) addParticipant(name);
-            }
-        });
-
+    var usernameInput = document.getElementById('usernameInput');
     if (usernameInput) {
         usernameInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
@@ -1387,14 +1323,18 @@ if (usernameInput) {
             var spinBtn = document.getElementById('spinBtn');
             var logoutBtn = document.getElementById('logoutBtn');
             var connectBtn = document.getElementById('connectBtn');
-
+            var addParticipantBtn = document.getElementById('addParticipantBtn');
+            var clearWheelBtn = document.getElementById('clearWheelBtn');
+            var removeWinnerBtn = document.getElementById('removeWinnerBtn');
+            var usernameInput = document.getElementById('usernameInput');
+            
             if (spinBtn) spinBtn.onclick = spinWheel;
             if (logoutBtn) logoutBtn.onclick = logout;
             if (connectBtn) connectBtn.onclick = connectToTwitch;
             if (addParticipantBtn) addParticipantBtn.onclick = addParticipant;
             if (clearWheelBtn) clearWheelBtn.onclick = clearWheel;
             if (removeWinnerBtn) removeWinnerBtn.onclick = removeWinner;
-
+            
             if (usernameInput) {
                 usernameInput.onkeypress = function(e) {
                     if (e.key === 'Enter') addParticipant();
@@ -1403,9 +1343,9 @@ if (usernameInput) {
         }
 
         function loginWithTwitch() {
-            var authUrl = 'https://id.twitch.tv/oauth2/authorize?client_id=' + CLIENT_ID +
-                '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
-                '&response_type=token&scope=' + SCOPES.join('+') +
+            var authUrl = 'https://id.twitch.tv/oauth2/authorize?client_id=' + CLIENT_ID + 
+                '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) + 
+                '&response_type=token&scope=' + SCOPES.join('+') + 
                 '&state=' + Math.random().toString(36);
             window.location.href = authUrl;
         }
@@ -1417,7 +1357,7 @@ if (usernameInput) {
             localStorage.removeItem('twitch_token');
             localStorage.removeItem('twitch_user');
             showAuthSection();
-
+            
             if (twitchSocket) {
                 twitchSocket.close();
             }
@@ -1440,7 +1380,7 @@ if (usernameInput) {
             var hash = window.location.hash.substring(1);
             var params = new URLSearchParams(hash);
             var token = params.get('access_token');
-
+            
             if (token) {
                 accessToken = token;
                 localStorage.setItem('twitch_token', token);
@@ -1448,14 +1388,14 @@ if (usernameInput) {
                 validateToken();
                 return;
             }
-
+            
             var storedToken = localStorage.getItem('twitch_token');
             if (storedToken) {
                 accessToken = storedToken;
                 validateToken();
                 return;
             }
-
+            
             showAuthSection();
         }
 
@@ -1508,45 +1448,45 @@ if (usernameInput) {
 
         function connectToTwitch() {
             var keyword = document.getElementById('keywordInput').value.trim();
-
+            
             if (!keyword) {
                 alert('Please enter a keyword for entries (e.g., !enter)');
                 return;
             }
-
+            
             if (!accessToken || !userInfo) {
                 alert('Please sign in with Twitch first');
                 return;
             }
-
+            
             var channelName = userInfo.login;
             entryKeyword = keyword;
-
+            
             updateConnectionStatus('Connecting...', 'warning');
             document.getElementById('connectBtn').disabled = true;
-
+            
             if (twitchSocket) {
                 twitchSocket.close();
             }
-
+            
             try {
                 twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-
+                
                 twitchSocket.onopen = function() {
                     twitchSocket.send('PASS oauth:' + accessToken + '\r\n');
                     twitchSocket.send('NICK ' + userInfo.login + '\r\n');
                     twitchSocket.send('CAP REQ :twitch.tv/commands\r\n');
                     twitchSocket.send('CAP REQ :twitch.tv/tags\r\n');
-
+                    
                     setTimeout(function() {
                         twitchSocket.send('JOIN #' + channelName + '\r\n');
                     }, 1000);
                 };
-
+                
                 twitchSocket.onmessage = function(event) {
                     handleTwitchMessage(event.data);
                 };
-
+                
                 twitchSocket.onclose = function() {
                     updateConnectionStatus('Disconnected', 'error');
                     document.getElementById('connectBtn').textContent = 'Connect to Chat';
@@ -1554,13 +1494,13 @@ if (usernameInput) {
                     document.getElementById('connectBtn').onclick = connectToTwitch;
                     isConnected = false;
                 };
-
+                
                 twitchSocket.onerror = function() {
                     updateConnectionStatus('Connection Error', 'error');
                     document.getElementById('connectBtn').disabled = false;
                     alert('Failed to connect to Twitch chat.');
                 };
-
+                
             } catch (error) {
                 updateConnectionStatus('Connection Failed', 'error');
                 document.getElementById('connectBtn').disabled = false;
@@ -1598,7 +1538,7 @@ if (usernameInput) {
                 var tagMap = {};
                 var isModerator = false;
                 var isBroadcaster = false;
-
+                
                 if (line.charAt(0) === '@') {
                     var firstSpace = line.indexOf(' ');
                     var tagStr = line.substring(1, firstSpace);
@@ -1610,7 +1550,7 @@ if (usernameInput) {
                         var v = pair.substring(eqIndex + 1);
                         tagMap[k] = v || '';
                     }
-
+                    
                     // Check badges for moderator/broadcaster status
                     var badges = tagMap.badges || '';
                     if (badges) {
@@ -1658,81 +1598,36 @@ if (usernameInput) {
             }
         }
     }
-}
-
-
-        function handleAddEntryCommand(message, modUsername) {
-            var parts = message.split(' ');
-            if (parts.length < 2) return;
-            var targetUser = parts[1].trim();
-            if (!targetUser) return;
-
-            var count = 1;
-            if (parts.length >= 3) {
-                var parsedCount = parseInt(parts[2]);
-                if (!isNaN(parsedCount) && parsedCount > 0 && parsedCount <= 10) {
-                    count = parsedCount;
-                }
-            }
-
-            for (var i = 0; i < count; i++) {
-                participants.push(targetUser);
-            }
-            participantEntries.set(targetUser, (participantEntries.get(targetUser) || 0) + count);
-
-            updateParticipantsList();
-            updateWeightsList();
-            drawWheel();
-
-            var totalEntries = participantEntries.get(targetUser);
-            showNotification(modUsername + ' added ' + count + ' entries for ' + targetUser + ' (total: ' + totalEntries + ')', 'var(--success-color)');
-            document.getElementById('statusText').textContent = participants.length + ' participants ready!';
-        }
-
-
-        function handleWeightCommand(message, modUsername) {
-            var parts = message.split(' ');
-            if (parts.length < 3) return;
-            var targetUser = parts[1].trim();
-            var weight = parseFloat(parts[2]);
-
-            if (!targetUser || isNaN(weight) || weight < 0.1 || weight > 10) return;
-
-            participantWeights.set(targetUser, weight);
-
-            updateWeightsList();
-            drawWheel();
-            showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
-        }
+}              
 
         function handleChatEntry(username, isModerator) {
             var now = Date.now();
-
+            
             if (participantCooldown.has(username)) {
                 var lastEntry = participantCooldown.get(username);
                 if (now - lastEntry < entryCooldownTime) {
                     return;
                 }
             }
-
+            
             if (participants.indexOf(username) === -1) {
                 // First time entry - anyone can enter
-                participants.push(username.toString());
+                participants.push(username);
                 participantCooldown.set(username, now);
                 updateParticipantsList();
                 updateWeightsList();
                 drawWheel();
-
+                
                 document.getElementById('statusText').textContent = participants.length + ' participants ready! Latest: ' + username;
                 showNotification(username + ' entered!', 'var(--success-color)');
             } else if (allowMultipleEntries && isModerator) {
                 // Multiple entries - only allowed for moderators
                 var currentWeight = participantWeights.get(username) || 1;
-                participantWeights.set(username.toString(), currentWeight + 1);
+                participantWeights.set(username, currentWeight + 1);
                 participantCooldown.set(username, now);
                 updateWeightsList();
                 drawWheel();
-
+                
                 document.getElementById('statusText').textContent = participants.length + ' participants ready! ' + username + ' entries: ' + (currentWeight + 1);
                 showNotification(username + ' (x' + (currentWeight + 1) + ')', 'var(--success-color)');
             }
@@ -1741,16 +1636,10 @@ if (usernameInput) {
 
         function clearWheel() {
             if (participants.length === 0) return;
-
+            
             if (confirm('Remove all participants?')) {
                 participants = [];
-lastWinner = winner;
-if (typeof playCongratsSound === 'function') {
-    playCongratsSound();
-    console.log("Winner chosen, playing celebration sound");
-}
-            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
-                console.log("Winner chosen, playing celebration sound");
+                lastWinner = null;
                 participantCooldown.clear();
                 updateParticipantsList();
                 updateWeightsList();
@@ -1762,18 +1651,31 @@ if (typeof playCongratsSound === 'function') {
         function removeWinner() {
             if (lastWinner && participants.indexOf(lastWinner) !== -1) {
                 removeParticipant(lastWinner);
-lastWinner = winner;
-if (typeof playCongratsSound === 'function') {
-    playCongratsSound();
-    console.log("Winner chosen, playing celebration sound");
-}
-            if (typeof playCongratsSound === 'function') { playCongratsSound(); } // Celebration sound null;
-                console.log("Winner chosen, playing celebration sound");
+                lastWinner = null;
                 document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
+    
+        
+function handleAddEntryCommand(message, username) {
+    var parts = message.split(' ');
+    if (parts.length < 2) return;
 
-                    }
+    var newUser = parts[1].trim();
+    if (!newUser) return;
+
+    participants.push(newUser);
+    participantEntries.set(newUser, (participantEntries.get(newUser) || 0) + 1);
+    participantWeights.set(newUser, 1);
+
+    updateParticipantsList();
+    updateWeightsList();
+    drawWheel();
+
+    showNotification(newUser + ' added by ' + username, 'var(--success-color)');
+}
+
+            }
 
             // Add new participant objects
             for (var i = 0; i < count; i++) {
@@ -1789,12 +1691,34 @@ if (typeof playCongratsSound === 'function') {
         }
 
 
+        
+function handleWeightCommand(message, username) {
+    var parts = message.split(' ');
+    if (parts.length < 3) return;
+
+    var targetUser = parts[1].trim();
+    var newWeight = parseInt(parts[2], 10);
+    if (!targetUser || isNaN(newWeight) || newWeight < 1) return;
+
+    // Ensure targetUser exists in participants list
+    if (participants.indexOf(targetUser) !== -1) {
+        participantWeights.set(targetUser, newWeight);
+        updateWeightsList();
+        drawWheel();
+        showNotification(username + ' set ' + targetUser + ' weight to ' + newWeight, 'var(--accent-primary)');
+    }
+}
+
+            }
 
             if (updated) {
                 updateWeightsList();
                 drawWheel();
                 showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
+            }
+        }
 
+}
 </script>
 </body>
 </html>
