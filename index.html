@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twitch Wheel Giveaway</title>
-    <style>
-        :root {
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Twitch Wheel Giveaway
+  </title>
+  <style>
+   :root {
             --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             --bg-secondary: rgba(255, 255, 255, 0.05);
             --bg-tertiary: rgba(255, 255, 255, 0.1);
@@ -488,162 +490,257 @@
                 font-size: 2rem;
             }
         }
-    </style>
-</head>
-<body data-theme="dark">
-    <button class="settings-toggle" id="settingsToggleBtn">⚙️ Settings</button>
-    <button class="sound-toggle" id="soundToggleBtn">🔊 Sound On</button>
-    <button class="theme-toggle" id="themeToggleBtn">🌙 Dark Mode</button>
-
-    <div class="header">
-        <h1>Twitch Wheel Giveaway</h1>
-        <p class="subtitle">Professional giveaway tool for Twitch streamers</p>
+  </style>
+ </head>
+ <body data-theme="dark">
+  <button class="settings-toggle" id="settingsToggleBtn">
+   ⚙️ Settings
+  </button>
+  <button class="sound-toggle" id="soundToggleBtn">
+   🔊 Sound On
+  </button>
+  <button class="theme-toggle" id="themeToggleBtn">
+   🌙 Dark Mode
+  </button>
+  <div class="header">
+   <h1>
+    Twitch Wheel Giveaway
+   </h1>
+   <p class="subtitle">
+    Professional giveaway tool for Twitch streamers
+   </p>
+  </div>
+  <div class="container" id="authSection">
+   <div class="auth-section" style="grid-column: 1 / -1; text-align: center;">
+    <h2>
+     Sign in with Twitch to get started
+    </h2>
+    <p style="color: var(--text-secondary); margin-bottom: 30px;">
+     Connect your Twitch account to start running giveaways in your chat
+    </p>
+    <button class="twitch-login-btn" id="twitchLoginBtn">
+     <svg fill="currentColor" height="20" viewbox="0 0 24 24" width="20">
+      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z">
+      </path>
+     </svg>
+     Sign in with Twitch
+    </button>
+   </div>
+  </div>
+  <div class="container" id="appSection" style="display: none;">
+   <div class="wheel-section">
+    <canvas height="400" id="wheelCanvas" width="400">
+    </canvas>
+    <div class="controls">
+     <button class="spin-btn" id="spinBtn">
+      🎲 SPIN THE WHEEL!
+     </button>
+     <div class="status-bar">
+      <div id="statusText">
+       Add participants to get started!
+      </div>
+     </div>
     </div>
-
-    <div id="authSection" class="container">
-        <div class="auth-section" style="grid-column: 1 / -1; text-align: center;">
-            <h2>Sign in with Twitch to get started</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 30px;">
-                Connect your Twitch account to start running giveaways in your chat
-            </p>
-            <button class="twitch-login-btn" id="twitchLoginBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-                </svg>
-                Sign in with Twitch
-            </button>
-        </div>
+   </div>
+   <div class="controls-section">
+    <div class="user-info" id="userInfo">
+     <img alt="User Avatar" class="user-avatar" id="userAvatar" src=""/>
+     <div>
+      <div id="userName" style="font-weight: bold;">
+      </div>
+      <div id="userLogin" style="color: var(--text-secondary); font-size: 14px;">
+      </div>
+     </div>
+     <button class="secondary-btn" id="logoutBtn" style="margin-left: auto; padding: 8px 12px; font-size: 14px;">
+      Logout
+     </button>
     </div>
-
-    <div id="appSection" class="container" style="display: none;">
-        <div class="wheel-section">
-            <canvas id="wheelCanvas" width="400" height="400"></canvas>
-            <div class="controls">
-                <button id="spinBtn" class="spin-btn">🎲 SPIN THE WHEEL!</button>
-                <div class="status-bar">
-                    <div id="statusText">Add participants to get started!</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="controls-section">
-            <div id="userInfo" class="user-info">
-                <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
-                <div>
-                    <div id="userName" style="font-weight: bold;"></div>
-                    <div id="userLogin" style="color: var(--text-secondary); font-size: 14px;"></div>
-                </div>
-                <button id="logoutBtn" class="secondary-btn" style="margin-left: auto; padding: 8px 12px; font-size: 14px;">Logout</button>
-            </div>
-
-            <h3>🎮 Giveaway Settings</h3>
-            
-            <input type="text" id="keywordInput" placeholder="Entry keyword (e.g., !enter)" value="!enter">
-            
-            <button id="connectBtn" class="primary-btn">🔗 Connect to Chat</button>
-            <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                Status: <span id="chatStatus">Disconnected</span>
-            </div>
-
-            <div style="margin-top: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
-                <strong>Chat Commands:</strong><br>
-                <span style="color: var(--text-secondary);">!spin - Mods only: spin the wheel</span>
-            </div>
-
-            <h3 style="margin-top: 30px;">⚙️ Manual Controls</h3>
-            
-            <input type="text" id="usernameInput" placeholder="Add username manually">
-            <button id="addParticipantBtn" class="secondary-btn">➕ Add Participant</button>
-            
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">🗑️ Clear All</button>
-                <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">❌ Remove Winner</button>
-            </div>
-
-            <div class="participants-list">
-                <h4 style="margin-top: 0;">👥 Participants (<span id="participantCount">0</span>)</h4>
-                <div id="participantsList"></div>
-            </div>
-
-            <div class="help-section">
-                <h3>💡 How to Use</h3>
-                <p><strong>1.</strong> Set your entry keyword</p>
-                <p><strong>2.</strong> Click "Connect to Chat"</p>
-                <p><strong>3.</strong> Tell viewers to type the keyword</p>
-                <p><strong>4.</strong> Mods can type !spin to spin</p>
-                <p><strong>5.</strong> Or click the spin button manually!</p>
-            </div>
-        </div>
+    <h3>
+     🎮 Giveaway Settings
+    </h3>
+    <input id="keywordInput" placeholder="Entry keyword (e.g., !enter)" type="text" value="!enter"/>
+    <button class="primary-btn" id="connectBtn">
+     🔗 Connect to Chat
+    </button>
+    <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
+     Status:
+     <span id="chatStatus">
+      Disconnected
+     </span>
     </div>
-
-    <div id="settingsModal" class="settings-modal">
-        <div class="settings-content">
-            <div class="settings-header">
-                <h3>Wheel Settings</h3>
-                <button class="settings-close" id="settingsCloseBtn">×</button>
-            </div>
-            
-            <div class="settings-section">
-                <h4>General Settings</h4>
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <strong>Allow Multiple Entries</strong><br>
-                        <small style="color: var(--text-secondary);">Let users enter multiple times</small>
-                    </div>
-                    <div class="setting-control">
-                        <input type="checkbox" id="allowMultipleEntries" class="checkbox">
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <strong>Entry Cooldown (seconds)</strong><br>
-                        <small style="color: var(--text-secondary);">Time between entries from same user</small>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" id="entryCooldown" class="weight-input" value="5" min="0" max="300">
-                    </div>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <h4>Wheel Colors</h4>
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <strong>Use Custom Colors</strong><br>
-                        <small style="color: var(--text-secondary);">Override default color scheme</small>
-                    </div>
-                    <div class="setting-control">
-                        <input type="checkbox" id="useCustomColors" class="checkbox">
-                    </div>
-                </div>
-                <div id="colorSettings" style="display: none;">
-                    <div class="setting-item">
-                        <div class="setting-label">Custom Color Palette</div>
-                        <div class="setting-control">
-                            <button id="addColorBtn" class="secondary-btn" style="padding: 5px 10px; font-size: 14px;">Add Color</button>
-                        </div>
-                    </div>
-                    <div id="colorList"></div>
-                </div>
-            </div>
-
-            <div class="settings-section" id="participantWeights" style="display: none;">
-                <h4>Participant Weights</h4>
-                <div style="margin-bottom: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
-                    <strong>Note:</strong> Higher weights = higher chance of winning. Default weight is 1.
-                </div>
-                <div id="weightsList"></div>
-            </div>
-
-            <div style="text-align: center; margin-top: 20px;">
-                <button id="resetSettingsBtn" class="danger-btn" style="margin-right: 10px;">Reset to Defaults</button>
-                <button id="saveSettingsBtn" class="primary-btn">Save Settings</button>
-            </div>
-        </div>
+    <div style="margin-top: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
+     <strong>
+      Chat Commands:
+     </strong>
+     <br/>
+     <span style="color: var(--text-secondary);">
+      !spin - Mods only: spin the wheel
+     </span>
     </div>
-
-    <script>
-        var participants = [];
+    <h3 style="margin-top: 30px;">
+     ⚙️ Manual Controls
+    </h3>
+    <input id="usernameInput" placeholder="Add username manually" type="text"/>
+    <button class="secondary-btn" id="addParticipantBtn">
+     ➕ Add Participant
+    </button>
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+     <button class="danger-btn" id="clearWheelBtn" style="flex: 1;">
+      🗑️ Clear All
+     </button>
+     <button class="secondary-btn" id="removeWinnerBtn" style="flex: 1;">
+      ❌ Remove Winner
+     </button>
+    </div>
+    <div class="participants-list">
+     <h4 style="margin-top: 0;">
+      👥 Participants (
+      <span id="participantCount">
+       0
+      </span>
+      )
+     </h4>
+     <div id="participantsList">
+     </div>
+    </div>
+    <div class="help-section">
+     <h3>
+      💡 How to Use
+     </h3>
+     <p>
+      <strong>
+       1.
+      </strong>
+      Set your entry keyword
+     </p>
+     <p>
+      <strong>
+       2.
+      </strong>
+      Click "Connect to Chat"
+     </p>
+     <p>
+      <strong>
+       3.
+      </strong>
+      Tell viewers to type the keyword
+     </p>
+     <p>
+      <strong>
+       4.
+      </strong>
+      Mods can type !spin to spin
+     </p>
+     <p>
+      <strong>
+       5.
+      </strong>
+      Or click the spin button manually!
+     </p>
+    </div>
+   </div>
+  </div>
+  <div class="settings-modal" id="settingsModal">
+   <div class="settings-content">
+    <div class="settings-header">
+     <h3>
+      Wheel Settings
+     </h3>
+     <button class="settings-close" id="settingsCloseBtn">
+      ×
+     </button>
+    </div>
+    <div class="settings-section">
+     <h4>
+      General Settings
+     </h4>
+     <div class="setting-item">
+      <div class="setting-label">
+       <strong>
+        Allow Multiple Entries
+       </strong>
+       <br/>
+       <small style="color: var(--text-secondary);">
+        Let users enter multiple times
+       </small>
+      </div>
+      <div class="setting-control">
+       <input class="checkbox" id="allowMultipleEntries" type="checkbox"/>
+      </div>
+     </div>
+     <div class="setting-item">
+      <div class="setting-label">
+       <strong>
+        Entry Cooldown (seconds)
+       </strong>
+       <br/>
+       <small style="color: var(--text-secondary);">
+        Time between entries from same user
+       </small>
+      </div>
+      <div class="setting-control">
+       <input class="weight-input" id="entryCooldown" max="300" min="0" type="number" value="5"/>
+      </div>
+     </div>
+    </div>
+    <div class="settings-section">
+     <h4>
+      Wheel Colors
+     </h4>
+     <div class="setting-item">
+      <div class="setting-label">
+       <strong>
+        Use Custom Colors
+       </strong>
+       <br/>
+       <small style="color: var(--text-secondary);">
+        Override default color scheme
+       </small>
+      </div>
+      <div class="setting-control">
+       <input class="checkbox" id="useCustomColors" type="checkbox"/>
+      </div>
+     </div>
+     <div id="colorSettings" style="display: none;">
+      <div class="setting-item">
+       <div class="setting-label">
+        Custom Color Palette
+       </div>
+       <div class="setting-control">
+        <button class="secondary-btn" id="addColorBtn" style="padding: 5px 10px; font-size: 14px;">
+         Add Color
+        </button>
+       </div>
+      </div>
+      <div id="colorList">
+      </div>
+     </div>
+    </div>
+    <div class="settings-section" id="participantWeights" style="display: none;">
+     <h4>
+      Participant Weights
+     </h4>
+     <div style="margin-bottom: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
+      <strong>
+       Note:
+      </strong>
+      Higher weights = higher chance of winning. Default weight is 1.
+     </div>
+     <div id="weightsList">
+     </div>
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+     <button class="danger-btn" id="resetSettingsBtn" style="margin-right: 10px;">
+      Reset to Defaults
+     </button>
+     <button class="primary-btn" id="saveSettingsBtn">
+      Save Settings
+     </button>
+    </div>
+   </div>
+  </div>
+  <script>
+   var participants = [];
         var isSpinning = false;
         var currentRotation = 0;
         var twitchSocket = null;
@@ -1577,7 +1674,9 @@ function determineWinner() {
     }
 }              
 
-        function handleChatEntry(username, isModerator) {
+        }
+
+function handleChatEntry(username, isModerator) {
             var now = Date.now();
             
             if (participantCooldown.has(username)) {
@@ -1632,6 +1731,6 @@ function determineWinner() {
                 document.getElementById('statusText').textContent = 'Winner removed!';
             }
         }
-    </script>
-</body>
+  </script>
+ </body>
 </html>
