@@ -1175,18 +1175,22 @@
     const lines = rawMessage.split('\r\n');
     for (let line of lines) {
         if (!line) continue;
+
         console.log('IRC:', line);
 
-        // Keepalive
+        // Respond to PING
         if (line.startsWith('PING')) {
-            try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch(e) {}
+            try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch (e) {}
             continue;
         }
 
-        // Auth status
+        // Auth banners
         if (line.includes('001') || line.includes('Welcome')) {
+            console.log('✅ Successfully authenticated with Twitch IRC');
             updateConnectionStatus('Authenticated', 'warning');
         }
+
+        // Joined channel
         if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
             isConnected = true;
             updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
@@ -1196,13 +1200,14 @@
                 btn.disabled = false;
                 btn.onclick = disconnectFromTwitch;
             }
+            console.log(`✅ Successfully joined #${userInfo.login}`);
         }
 
-        // Chat messages
+        // --- Only handle PRIVMSG chat lines ---
         if (!line.includes('PRIVMSG')) continue;
 
-        // --- TAGS (optional) ---
-        let tagMap = {};
+        // --- Parse IRC tags (optional) ---
+        const tagMap = {};
         if (line.startsWith('@')) {
             const firstSpace = line.indexOf(' ');
             const tagStr = line.substring(1, firstSpace);
@@ -1212,24 +1217,22 @@
             });
         }
 
-        // --- Username ---
-        // Matches ":username!" after the (optional) tags and colon
+        // --- Extract username ---
         const userMatch = line.match(/:([^!\s]+)!/);
         const username = userMatch ? userMatch[1] : null;
 
-        // --- Message body ---
-        // Everything after the first " PRIVMSG #channel :" (note space before PRIVMSG)
+        // --- Extract message text ---
         let message = null;
-        const splitIdx = line.indexOf(' PRIVMSG ');
-        if (splitIdx !== -1) {
-            const after = line.slice(splitIdx);
+        const privIdx = line.indexOf(' PRIVMSG ');
+        if (privIdx !== -1) {
+            const after = line.slice(privIdx);
             const colonIdx = after.indexOf(' :');
             if (colonIdx !== -1) {
                 message = after.slice(colonIdx + 2).trim();
             }
         }
 
-        // --- Roles ---
+        // --- Role detection ---
         let isBroadcaster = false;
         let isModerator = false;
 
@@ -1239,22 +1242,23 @@
             isModerator = badges.includes('moderator') || isBroadcaster;
         }
         if (tagMap.mod === '1') isModerator = true;
-        if (username && username.toLowerCase() === (userInfo.login || '').toLowerCase()) {
+        if (username && userInfo && userInfo.login && username.toLowerCase() === userInfo.login.toLowerCase()) {
             isBroadcaster = true;
             isModerator = true;
         }
 
-        // --- Act on commands ---
+        // --- Reactions ---
         if (username && message) {
             console.log(`Chat: ${username}: ${message} (mod:${isModerator}, bc:${isBroadcaster})`);
 
-            // Entry keyword (anyone)
+            // Anyone can enter with the configured keyword
             if (typeof entryKeyword === 'string' && message.toLowerCase() === entryKeyword.toLowerCase()) {
                 handleChatEntry(username);
             }
 
-            // Spin (mods/broadcaster only)
+            // Only mods or broadcaster can spin
             if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
+                console.log(`Moderator ${username} triggered spin command`);
                 spinWheel();
 
                 const n = document.createElement('div');
@@ -1269,87 +1273,8 @@
         }
     }
 }
-                
-                if (line.includes('001') || line.includes('Welcome')) {
-                    console.log('✅ Successfully authenticated with Twitch IRC');
-                    updateConnectionStatus('Authenticated', 'warning');
-                }
-                
-                if (line.includes(`366`) && line.includes(`#${userInfo.login}`)) {
-                    isConnected = true;
-                    updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
-                    document.getElementById('connectBtn').textContent = '🔌 Disconnect';
-                    document.getElementById('connectBtn').disabled = false;
-                    document.getElementById('connectBtn').onclick = disconnectFromTwitch;
-                    console.log(`✅ Successfully joined #${userInfo.login}`);
-                    
-                    // Don't try to fetch moderators - requires special permissions
-                }
-                
-                // Parse chat messages with user badges/tags
-                if (line.includes('PRIVMSG')) {
-                    let username, message, isModerator = false, isBroadcaster = false;
-                    
-                    if (line.startsWith('@')) {
-                        const tagMatch = line.match(/^@([^:]+)\s*:(.+)$/);
-                        if (tagMatch) {
-                            const tags = tagMatch[1];
-                            const rest = tagMatch[2];
-                            
-                            if (tags.includes('badges=')) {
-                                const badgesMatch = tags.match(/badges=([^;]*)/);
-                                if (badgesMatch) {
-                                    const badges = badgesMatch[1];
-                                    isModerator = badges.includes('moderator') || badges.includes('broadcaster');
-                                    isBroadcaster = badges.includes('broadcaster');
-                                }
-                            }
-                            
-                            const msgMatch = rest.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                            if (msgMatch) {
-                                username = msgMatch[1];
-                                message = msgMatch[2].trim();
-                            }
-                        }
-                    } else {
-                        const match = line.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                        if (match) {
-                            username = match[1];
-                            message = match[2].trim();
-                            isBroadcaster = username.toLowerCase() === userInfo.login.toLowerCase();
-                            isModerator = isBroadcaster;
-                        }
-                    }
-                    
-                    if (username && message) {
-                        console.log(`Chat: ${username}: ${message} (mod: ${isModerator})`);
-                        
-                        if (message.toLowerCase() === entryKeyword.toLowerCase()) {
-                            handleChatEntry(username);
-                        }
-                        
-                        if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
-                            console.log(`Moderator ${username} triggered spin command`);
-                            spinWheel();
-                            
-                            const notification = document.createElement('div');
-                            notification.className = 'entry-notification';
-                            notification.innerHTML = `🎯 ${username} spun the wheel!`;
-                            notification.style.background = 'var(--accent-primary)';
-                            document.body.appendChild(notification);
-                            
-                            setTimeout(() => {
-                                if (document.body.contains(notification)) {
-                                    document.body.removeChild(notification);
-                                }
-                            }, 3000);
-                        }
-                    }
-                }
-            }
-        }
 
-        function handleChatEntry(username) {
+function handleChatEntry(username) {
             const now = Date.now();
             const cooldownTime = 5000;
             
