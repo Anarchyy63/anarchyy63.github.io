@@ -922,59 +922,9 @@
             }
         }
 
-        function playTickSound() {
-            if (!soundsEnabled || !audioContext) return;
-            
-            try {
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                
-                var oscillator = audioContext.createOscillator();
-                var gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.1);
-                
-            } catch (error) {
-                console.log('Audio playback failed:', error);
+         catch (error) {
             }
-        }
-
-                        
-                // Play a celebration melody
-                var frequencies = [523, 659, 784, 1047];
-                for (var i = 0; i < frequencies.length; i++) {
-                    var oscillator = audioContext.createOscillator();
-                    var gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(frequencies[i], audioContext.currentTime);
-                    oscillator.type = 'sine';
-                    
-                    var startTime = audioContext.currentTime + (i * 0.15);
-                    gainNode.gain.setValueAtTime(0, startTime);
-                    gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
-                    
-                    oscillator.start(startTime);
-                    oscillator.stop(startTime + 0.3);
-                }
-                
-            } catch (error) {
-            }
-        }
+        
 
         function drawWheel() {
             var canvas = document.getElementById('wheelCanvas');
@@ -1212,7 +1162,7 @@ function addParticipant(username) {
 
     document.getElementById('usernameInput').value = '';
     document.getElementById('statusText').textContent = participants.length + ' participants ready!';
-}
+
 
 function updateParticipantsList() {
             var list = document.getElementById('participantsList');
@@ -1687,7 +1637,7 @@ function handleAddEntryCommand(message, username) {
 
             showNotification(modUsername + ' added ' + count + ' entries for ' + targetUser, 'var(--success-color)');
             document.getElementById('statusText').textContent = participants.length + ' participants ready!';
-        }
+        
 
 
         
@@ -1708,16 +1658,16 @@ function handleWeightCommand(message, username) {
     }
 }
 
-            }
+            
 
             if (updated) {
                 updateWeightsList();
                 drawWheel();
                 showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
             }
-        }
+        
 
-}
+
 </script>
 </body>
 </html>
