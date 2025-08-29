@@ -329,20 +329,21 @@
         .status-error { color: var(--error-color); }
 
         .winner-announcement {
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
             color: white;
-            padding: 40px 60px;
-            border-radius: 20px;
-            font-size: 2rem;
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-size: 1.2rem;
             font-weight: bold;
-            box-shadow: 0 20px 60px var(--shadow-color);
+            box-shadow: 0 10px 30px var(--shadow-color);
             z-index: 2000;
             animation: winnerPop 0.6s ease-out;
             text-align: center;
+            white-space: nowrap;
         }
 
         @keyframes winnerPop {
@@ -939,11 +940,20 @@
             const announcement = document.createElement('div');
             announcement.className = 'winner-announcement';
             announcement.innerHTML = `🎉 WINNER! 🎉<br>${winner}`;
-            document.body.appendChild(announcement);
+            
+            // Position relative to the wheel canvas
+            const wheelCanvas = document.getElementById('wheelCanvas');
+            const wheelSection = wheelCanvas.parentElement;
+            
+            // Make sure the wheel section has relative positioning
+            wheelSection.style.position = 'relative';
+            
+            // Append to wheel section instead of body
+            wheelSection.appendChild(announcement);
             
             setTimeout(() => {
-                if (document.body.contains(announcement)) {
-                    document.body.removeChild(announcement);
+                if (wheelSection.contains(announcement)) {
+                    wheelSection.removeChild(announcement);
                 }
             }, 5000);
         }
