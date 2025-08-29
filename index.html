@@ -408,35 +408,56 @@
             }
         }
 
-        .overlay-mode {
+        /* OBS-friendly transparent mode */
+        .transparent-mode {
             background: transparent !important;
-            padding: 0 !important;
         }
 
-        .overlay-mode .header,
-        .overlay-mode .theme-toggle,
-        .overlay-mode .sound-toggle,
-        .overlay-mode #authSection,
-        .overlay-mode .controls-section {
-            display: none !important;
-        }
-
-        .overlay-mode .container {
-            display: block !important;
-            max-width: none !important;
-            margin: 0 !important;
-            padding: 20px !important;
-        }
-
-        .overlay-mode .wheel-section {
+        .transparent-mode .wheel-section {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             backdrop-filter: none !important;
         }
 
-        .overlay-mode #wheelCanvas {
+        .transparent-mode .header,
+        .transparent-mode .theme-toggle,
+        .transparent-mode .sound-toggle,
+        .transparent-mode .controls-section {
+            display: none !important;
+        }
+
+        .transparent-mode .container {
+            display: block !important;
+            max-width: 500px !important;
+            margin: 50px auto !important;
+        }
+
+        .transparent-mode #wheelCanvas {
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Crop-friendly mode */
+        .crop-mode {
+            padding: 0 !important;
+        }
+
+        .crop-mode .container {
+            max-width: 450px !important;
+            margin: 0 auto !important;
+            display: block !important;
+        }
+
+        .crop-mode .wheel-section {
+            margin: 0 !important;
+            padding: 20px !important;
+        }
+
+        .crop-mode .header,
+        .crop-mode .theme-toggle,
+        .crop-mode .sound-toggle,
+        .crop-mode .controls-section {
+            display: none !important;
         }
     </style>
 </head>
@@ -494,12 +515,16 @@
 
             <h3>🎮 Giveaway Settings</h3>
             
-            <input type="text" id="channelInput" placeholder="Channel to monitor (leave blank for your channel)">
             <input type="text" id="keywordInput" placeholder="Entry keyword (e.g., !enter)" value="!enter">
             
             <button onclick="connectToTwitch()" id="connectBtn" class="primary-btn">🔗 Connect to Chat</button>
             <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
                 Status: <span id="chatStatus">Disconnected</span>
+            </div>
+
+            <div style="margin-top: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px;">
+                <strong>Chat Commands:</strong><br>
+                <span style="color: var(--text-secondary);">!spin - Mods only: spin the wheel</span>
             </div>
 
             <h3 style="margin-top: 30px;">⚙️ Manual Controls</h3>
@@ -519,11 +544,15 @@
 
             <div class="help-section">
                 <h3>💡 How to Use</h3>
-                <p><strong>1.</strong> Set your entry keyword and channel</p>
+                <p><strong>1.</strong> Set your entry keyword</p>
                 <p><strong>2.</strong> Click "Connect to Chat"</p>
                 <p><strong>3.</strong> Tell viewers to type the keyword</p>
-                <p><strong>4.</strong> Watch entries appear automatically</p>
-                <p><strong>5.</strong> Spin when ready!</p>
+                <p><strong>4.</strong> Mods can type !spin to spin</p>
+                <p><strong>5.</strong> Or click the spin button manually!</p>
+                
+                <h4>OBS Setup:</h4>
+                <p>Add <strong>?transparent=true</strong> to URL for transparent background</p>
+                <p>Add <strong>?crop=true</strong> to URL for easy cropping</p>
             </div>
         </div>
     </div>
@@ -537,20 +566,20 @@
         let isConnected = false;
         let lastWinner = null;
         let entryKeyword = '!enter';
-        let channelName = '';
         let participantCooldown = new Map();
         let accessToken = null;
         let userInfo = null;
+        let moderators = new Set(); // Track channel moderators
         
         // Audio variables
         let tickSound = null;
         let congratsSound = null;
         let audioContext = null;
         let soundsEnabled = true;
-        let currentTickOscillator = null; // Track current tick to prevent overlaps
+        let currentTickOscillator = null;
 
         // Twitch OAuth configuration
-        const CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht'; // You'll need to register your app
+        const CLIENT_ID = 'cwj8nbsvc36p84j31gy42mzpcmx7ht';
         const REDIRECT_URI = window.location.origin + window.location.pathname;
         const SCOPES = ['chat:read', 'user:read:email'];
 
@@ -570,7 +599,6 @@
             }
         }
 
-        // Initialize theme from localStorage
         function initializeTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             const body = document.body;
@@ -582,11 +610,9 @@
 
         // Sound management
         function initializeAudio() {
-            // Initialize sound preference
             soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
             updateSoundToggle();
             
-            // Create audio context for sound generation
             if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
                 audioContext = new (AudioContext || webkitAudioContext)();
             }
@@ -597,7 +623,6 @@
             localStorage.setItem('soundsEnabled', soundsEnabled.toString());
             updateSoundToggle();
             
-            // Test sound when enabled
             if (soundsEnabled && audioContext) {
                 playTickSound();
             }
@@ -608,21 +633,16 @@
             soundToggle.textContent = soundsEnabled ? '🔊 Sound On' : '🔇 Sound Off';
         }
 
-        // Sound generation functions
         function playTickSound() {
             if (!soundsEnabled || !audioContext) return;
             
             try {
-                // Stop any existing tick sound to prevent overlap
                 if (currentTickOscillator) {
                     try {
                         currentTickOscillator.stop();
-                    } catch (e) {
-                        // Oscillator may already be stopped
-                    }
+                    } catch (e) {}
                 }
                 
-                // Resume AudioContext if it's suspended (browser requirement)
                 if (audioContext.state === 'suspended') {
                     audioContext.resume();
                 }
@@ -633,18 +653,15 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                // Tick sound with higher frequency for clicking effect
                 oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
                 oscillator.type = 'sine';
                 
-                // 80% of original volume (was 0.1, now 0.08)
                 gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
                 
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.02);
                 
-                // Store reference and clear it when done
                 currentTickOscillator = oscillator;
                 oscillator.onended = () => {
                     currentTickOscillator = null;
@@ -659,13 +676,11 @@
             if (!soundsEnabled || !audioContext) return;
             
             try {
-                // Resume AudioContext if it's suspended
                 if (audioContext.state === 'suspended') {
                     audioContext.resume();
                 }
                 
-                // Create a celebratory chord progression
-                const frequencies = [523.25, 659.25, 783.99]; // C, E, G major chord
+                const frequencies = [523.25, 659.25, 783.99];
                 const duration = 0.8;
                 
                 frequencies.forEach((freq, index) => {
@@ -687,7 +702,6 @@
                     oscillator.stop(startTime + duration);
                 });
                 
-                // Add a high celebratory tone
                 setTimeout(() => {
                     const highOsc = audioContext.createOscillator();
                     const highGain = audioContext.createGain();
@@ -695,7 +709,7 @@
                     highOsc.connect(highGain);
                     highGain.connect(audioContext.destination);
                     
-                    highOsc.frequency.setValueAtTime(1046.5, audioContext.currentTime); // High C
+                    highOsc.frequency.setValueAtTime(1046.5, audioContext.currentTime);
                     highOsc.type = 'sine';
                     
                     highGain.gain.setValueAtTime(0, audioContext.currentTime);
@@ -711,7 +725,7 @@
             }
         }
 
-        // Wheel colors optimized for readability
+        // Wheel colors
         const wheelColors = [
             '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
             '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
@@ -730,7 +744,6 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             if (participants.length === 0) {
-                // Draw empty wheel
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
                 ctx.fillStyle = document.body.getAttribute('data-theme') === 'dark' ? '#2a2a3e' : '#f8f9fa';
@@ -739,7 +752,6 @@
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
-                // Empty wheel text
                 ctx.fillStyle = document.body.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#212529';
                 ctx.font = 'bold 18px Segoe UI';
                 ctx.textAlign = 'center';
@@ -764,7 +776,7 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Draw text with better readability
+                // Draw text along the segment (rotated to follow arc)
                 const textAngle = startAngle + anglePerSegment / 2;
                 const textRadius = radius * 0.7;
                 const textX = centerX + Math.cos(textAngle) * textRadius;
@@ -772,7 +784,14 @@
                 
                 ctx.save();
                 ctx.translate(textX, textY);
-                ctx.rotate(textAngle + Math.PI / 2);
+                
+                // Rotate text to follow the arc direction
+                let rotation = textAngle;
+                if (textAngle > Math.PI / 2 && textAngle < 3 * Math.PI / 2) {
+                    // Flip text if it would be upside down
+                    rotation += Math.PI;
+                }
+                ctx.rotate(rotation);
                 
                 // Add text background for better readability
                 const textWidth = ctx.measureText(participants[i]).width;
@@ -784,534 +803,4 @@
                 ctx.font = 'bold 14px Segoe UI';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(participants[i], 0, 0);
-                
-                ctx.restore();
-            }
-            
-            // Draw center circle
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
-            ctx.fillStyle = '#9146ff';
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            // Draw pointer (at right pointing towards center)
-            ctx.beginPath();
-            ctx.moveTo(centerX + radius - 18, centerY);
-            ctx.lineTo(centerX + radius + 15, centerY - 12);
-            ctx.lineTo(centerX + radius + 15, centerY + 12);
-            ctx.fillStyle = '#9146ff';
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        // Twitch authentication
-        function loginWithTwitch() {
-            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join('+')}&state=${Math.random().toString(36)}`;
-            window.location.href = authUrl;
-        }
-
-        function logout() {
-            accessToken = null;
-            userInfo = null;
-            localStorage.removeItem('twitch_token');
-            localStorage.removeItem('twitch_user');
-            showAuthSection();
-            
-            if (twitchSocket) {
-                twitchSocket.close();
-            }
-        }
-
-        function showAuthSection() {
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('appSection').style.display = 'none';
-        }
-
-        function showAppSection() {
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('appSection').style.display = 'block';
-            drawWheel();
-            updateParticipantsList();
-        }
-
-        // Check for OAuth token on page load
-        function checkForToken() {
-            // Check URL hash for token
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const token = params.get('access_token');
-            
-            if (token) {
-                accessToken = token;
-                localStorage.setItem('twitch_token', token);
-                history.replaceState(null, null, window.location.pathname);
-                validateToken();
-                return;
-            }
-            
-            // Check localStorage for existing token
-            const storedToken = localStorage.getItem('twitch_token');
-            if (storedToken) {
-                accessToken = storedToken;
-                validateToken();
-                return;
-            }
-            
-            showAuthSection();
-        }
-
-        async function validateToken() {
-            if (!accessToken) {
-                showAuthSection();
-                return;
-            }
-
-            try {
-                const response = await fetch('https://api.twitch.tv/helix/users', {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Client-Id': CLIENT_ID
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    userInfo = data.data[0];
-                    localStorage.setItem('twitch_user', JSON.stringify(userInfo));
-                    updateUserInfo();
-                    showAppSection();
-                } else {
-                    logout();
-                }
-            } catch (error) {
-                console.error('Token validation failed:', error);
-                logout();
-            }
-        }
-
-        function updateUserInfo() {
-            if (userInfo) {
-                document.getElementById('userAvatar').src = userInfo.profile_image_url;
-                document.getElementById('userName').textContent = userInfo.display_name;
-                document.getElementById('userLogin').textContent = '@' + userInfo.login;
-                
-                // Auto-fill channel input with user's channel
-                if (!document.getElementById('channelInput').value) {
-                    document.getElementById('channelInput').value = userInfo.login;
-                }
-            }
-        }
-
-        function updateConnectionStatus(status, type) {
-            const statusElement = document.getElementById('chatStatus');
-            statusElement.textContent = status;
-            statusElement.className = `status-${type}`;
-        }
-
-        // Wheel spinning logic
-        function spinWheel() {
-            if (participants.length === 0) {
-                alert('Add some participants first!');
-                return;
-            }
-            
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            document.getElementById('spinBtn').disabled = true;
-            document.getElementById('statusText').textContent = 'Spinning...';
-            
-            const spinDuration = 4000 + Math.random() * 3000; // 4-7 seconds (was 3-5)
-            const spinAmount = Math.random() * 4 + 12; // 12-16 full rotations (was 15-21)
-            const startRotation = currentRotation;
-            const startTime = Date.now();
-            
-            // Variables for segment-based tick sound
-            const anglePerSegment = (2 * Math.PI) / participants.length;
-            let lastSegmentIndex = -1;
-            
-            function animate() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / spinDuration, 1);
-                
-                // Smooth easing function
-                const easeOut = 1 - Math.pow(1 - progress, 4);
-                currentRotation = startRotation + (spinAmount * 2 * Math.PI * easeOut);
-                
-                // Calculate which segment the pointer is currently over
-                const normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
-                const currentSegmentIndex = Math.floor(normalizedRotation / anglePerSegment);
-                
-                // Play tick sound when crossing into a new segment
-                if (soundsEnabled && currentSegmentIndex !== lastSegmentIndex && lastSegmentIndex !== -1) {
-                    playTickSound();
-                }
-                lastSegmentIndex = currentSegmentIndex;
-                
-                drawWheel();
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    // Determine winner
-                    const winnerIndex = Math.floor(normalizedRotation / anglePerSegment);
-                    const winner = participants[winnerIndex];
-                    
-                    lastWinner = winner;
-                    showWinner(winner);
-                    
-                    // Play congratulations sound
-                    setTimeout(() => playCongratsSound(), 500);
-                    
-                    isSpinning = false;
-                    document.getElementById('spinBtn').disabled = false;
-                    document.getElementById('statusText').textContent = `Winner: ${winner}`;
-                }
-            }
-            
-            animate();
-        }
-
-        function showWinner(winner) {
-            const announcement = document.createElement('div');
-            announcement.className = 'winner-announcement';
-            announcement.innerHTML = `🎉 WINNER! 🎉<br>${winner}`;
-            document.body.appendChild(announcement);
-            
-            setTimeout(() => {
-                if (document.body.contains(announcement)) {
-                    document.body.removeChild(announcement);
-                }
-            }, 5000);
-        }
-
-        // Participant management
-        function addParticipant(username) {
-            if (!username) {
-                username = document.getElementById('usernameInput').value.trim();
-            }
-            
-            if (username && !participants.includes(username)) {
-                participants.push(username);
-                updateParticipantsList();
-                drawWheel();
-                document.getElementById('usernameInput').value = '';
-                document.getElementById('statusText').textContent = `${participants.length} participants ready!`;
-            }
-        }
-
-        function removeParticipant(username) {
-            const index = participants.indexOf(username);
-            if (index > -1) {
-                participants.splice(index, 1);
-                updateParticipantsList();
-                drawWheel();
-                
-                if (participants.length === 0) {
-                    document.getElementById('statusText').textContent = 'Add participants to get started!';
-                } else {
-                    document.getElementById('statusText').textContent = `${participants.length} participants ready!`;
-                }
-            }
-        }
-
-        function removeWinner() {
-            if (lastWinner && participants.includes(lastWinner)) {
-                removeParticipant(lastWinner);
-                lastWinner = null;
-                document.getElementById('statusText').textContent = 'Winner removed!';
-            }
-        }
-
-        function clearWheel() {
-            if (participants.length === 0) return;
-            
-            if (confirm('Remove all participants?')) {
-                participants = [];
-                lastWinner = null;
-                participantCooldown.clear();
-                updateParticipantsList();
-                drawWheel();
-                document.getElementById('statusText').textContent = 'Wheel cleared!';
-                updateConnectionStatus('Disconnected', 'error');
-                
-                if (twitchSocket) {
-                    twitchSocket.close();
-                    twitchSocket = null;
-                    isConnected = false;
-                    document.getElementById('connectBtn').textContent = '🔗 Connect to Chat';
-                    document.getElementById('connectBtn').onclick = connectToTwitch;
-                }
-            }
-        }
-
-        function updateParticipantsList() {
-            const list = document.getElementById('participantsList');
-            const count = document.getElementById('participantCount');
-            
-            count.textContent = participants.length;
-            list.innerHTML = '';
-            
-            if (participants.length === 0) {
-                list.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin: 10px 0;">No participants yet</p>';
-                return;
-            }
-            
-            participants.forEach(participant => {
-                const item = document.createElement('div');
-                item.className = 'participant-item';
-                item.innerHTML = `
-                    <span>${participant}</span>
-                    <button class="remove-btn" onclick="removeParticipant('${participant}')">×</button>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        // Twitch chat connection
-        function connectToTwitch() {
-            const channel = document.getElementById('channelInput').value.trim().toLowerCase() || userInfo.login;
-            const keyword = document.getElementById('keywordInput').value.trim();
-            
-            if (!keyword) {
-                alert('Please enter a keyword for entries (e.g., !enter)');
-                return;
-            }
-            
-            if (!accessToken) {
-                alert('Please sign in with Twitch first');
-                return;
-            }
-            
-            channelName = channel;
-            entryKeyword = keyword;
-            
-            updateConnectionStatus('Connecting...', 'warning');
-            document.getElementById('connectBtn').disabled = true;
-            
-            
-            // Disconnect existing connection
-            if (twitchSocket) {
-                twitchSocket.close();
-            }
-            
-            try {
-                // Connect to Twitch IRC
-                console.log(`Connecting to Twitch IRC for channel: ${channelName}`);
-                twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-                
-                twitchSocket.onopen = function() {
-                    console.log('✅ WebSocket opened, authenticating...');
-                    
-                    // Send IRC authentication
-                    twitchSocket.send(`PASS oauth:${accessToken}\r\n`);
-                    twitchSocket.send(`NICK ${userInfo.login}\r\n`);
-                    
-                    // Request capabilities for better parsing
-                    twitchSocket.send('CAP REQ :twitch.tv/commands\r\n');
-                    twitchSocket.send('CAP REQ :twitch.tv/tags\r\n');
-                    
-                    setTimeout(() => {
-                        twitchSocket.send(`JOIN #${channelName}\r\n`);
-                        console.log(`Joining channel #${channelName}`);
-                    }, 1000);
-                };
-                
-                twitchSocket.onmessage = function(event) {
-                    handleTwitchMessage(event.data);
-                };
-                
-                twitchSocket.onclose = function(event) {
-                    console.log('WebSocket closed:', event.code, event.reason);
-                    updateConnectionStatus('Disconnected', 'error');
-                    document.getElementById('connectBtn').textContent = '🔗 Connect to Chat';
-                    document.getElementById('connectBtn').disabled = false;
-                    document.getElementById('connectBtn').onclick = connectToTwitch;
-                    isConnected = false;
-                };
-                
-                twitchSocket.onerror = function(error) {
-                    console.error('WebSocket error:', error);
-                    updateConnectionStatus('Connection Error', 'error');
-                    document.getElementById('connectBtn').disabled = false;
-                    alert('Failed to connect to Twitch chat. Please check your connection and try again.');
-                };
-                
-            } catch (error) {
-                console.error('Failed to create WebSocket:', error);
-                updateConnectionStatus('Connection Failed', 'error');
-                document.getElementById('connectBtn').disabled = false;
-                alert('Connection failed: ' + error.message);
-            }
-        }
-
-        function disconnectFromTwitch() {
-            if (twitchSocket) {
-                twitchSocket.close();
-                twitchSocket = null;
-            }
-            isConnected = false;
-            updateConnectionStatus('Disconnected', 'error');
-            document.getElementById('connectBtn').textContent = '🔗 Connect to Chat';
-            document.getElementById('connectBtn').onclick = connectToTwitch;
-            document.getElementById('connectBtn').disabled = false;
-        }
-
-        function handleTwitchMessage(rawMessage) {
-            const lines = rawMessage.split('\r\n');
-            
-            for (let line of lines) {
-                if (!line) continue;
-                
-                console.log('IRC:', line);
-                
-                // Handle PING/PONG to keep connection alive
-                if (line.startsWith('PING')) {
-                    twitchSocket.send('PONG :tmi.twitch.tv\r\n');
-                    continue;
-                }
-                
-                // Handle successful connection messages
-                if (line.includes('001') || line.includes('Welcome')) {
-                    console.log('✅ Successfully authenticated with Twitch IRC');
-                    updateConnectionStatus('Authenticated', 'warning');
-                }
-                
-                // Handle successful join
-                if (line.includes(`366`) && line.includes(`#${channelName}`)) {
-                    isConnected = true;
-                    updateConnectionStatus(`Connected to #${channelName}`, 'connected');
-                    document.getElementById('connectBtn').textContent = '🔌 Disconnect';
-                    document.getElementById('connectBtn').disabled = false;
-                    document.getElementById('connectBtn').onclick = disconnectFromTwitch;
-                    console.log(`✅ Successfully joined #${channelName}`);
-                }
-                
-                // Parse chat messages
-                if (line.includes('PRIVMSG')) {
-                    const match = line.match(/:(.+?)!.+?PRIVMSG #.+ :(.+)/);
-                    if (match) {
-                        const username = match[1];
-                        const message = match[2].trim();
-                        
-                        console.log(`Chat: ${username}: ${message}`);
-                        
-                        // Check if message matches our entry keyword
-                        if (message.toLowerCase() === entryKeyword.toLowerCase()) {
-                            handleChatEntry(username);
-                        }
-                    }
-                }
-            }
-        }
-
-         function connectToTwitchOverlay() {
-            connectToTwitch();
-            }
-
-        function handleChatEntry(username) {
-            // Check cooldown (prevent spam entries)
-            const now = Date.now();
-            const cooldownTime = 5000; // 5 seconds cooldown per user
-            
-            if (participantCooldown.has(username)) {
-                const lastEntry = participantCooldown.get(username);
-                if (now - lastEntry < cooldownTime) {
-                    console.log(`${username} is on cooldown, ignoring entry`);
-                    return;
-                }
-            }
-            
-            // Add participant if not already in list
-            if (!participants.includes(username)) {
-                participants.push(username);
-                participantCooldown.set(username, now);
-                updateParticipantsList();
-                drawWheel();
-                
-                console.log(`✅ ${username} entered the giveaway!`);
-                document.getElementById('statusText').textContent = `${participants.length} participants ready! Latest: ${username}`;
-                
-                // Show entry notification
-                showEntryNotification(username);
-            } else {
-                console.log(`${username} already entered`);
-            }
-        }
-
-        function showEntryNotification(username) {
-            const notification = document.createElement('div');
-            notification.className = 'entry-notification';
-            notification.innerHTML = `🎯 ${username} entered!`;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 3000);
-        }
-
-        // Event listeners
-        document.getElementById('spinBtn').onclick = spinWheel;
-        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addParticipant();
-            }
-        });
-
-        // Check for overlay mode
-        function checkOverlayMode() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isOverlay = urlParams.get('overlay') === 'true';
-            
-            if (isOverlay) {
-                document.body.classList.add('overlay-mode');
-                // In overlay mode, skip auth and show the wheel directly
-                showAppSection();
-                
-                // Connect to WebSocket for real-time updates if token provided
-                const token = urlParams.get('token');
-                const channel = urlParams.get('channel');
-                const keyword = urlParams.get('keyword') || '!enter';
-                
-                if (token && channel) {
-                    // Simulate user info for overlay mode
-                    userInfo = { login: channel };
-                    accessToken = token;
-                    
-                    // Set up connection parameters
-                    channelName = channel.toLowerCase();
-                    entryKeyword = keyword;
-                    
-                    // Auto-connect to chat
-                    setTimeout(() => {
-                        connectToTwitchOverlay();
-                    }, 1000);
-                }
-                
-                return true;
-            }
-            return false;
-        }
-        
-        // Initialize app
-        window.addEventListener('load', function() {
-            initializeTheme();
-            initializeAudio();
-            
-            // Check if this is overlay mode first
-            if (!checkOverlayMode()) {
-                // Normal mode - check for authentication
-                checkForToken();
-            }
-        });
-    </script>
-</body>
-</html>
+                ctx.fillText(participants[i],
