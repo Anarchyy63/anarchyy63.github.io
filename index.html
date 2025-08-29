@@ -504,7 +504,12 @@
             <p style="color: var(--text-secondary); margin-bottom: 30px;">
                 Connect your Twitch account to start running giveaways in your chat
             </p>
-            <button class="twitch-login-btn" id="twitchLoginBtn">Sign in with Twitch</button>
+            <button class="twitch-login-btn" id="twitchLoginBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                </svg>
+                Sign in with Twitch
+            </button>
         </div>
     </div>
 
@@ -512,7 +517,7 @@
         <div class="wheel-section">
             <canvas id="wheelCanvas" width="400" height="400"></canvas>
             <div class="controls">
-                <button id="spinBtn" class="spin-btn">SPIN THE WHEEL!</button>
+                <button id="spinBtn" class="spin-btn">🎲 SPIN THE WHEEL!</button>
                 <div class="status-bar">
                     <div id="statusText">Add participants to get started!</div>
                 </div>
@@ -529,11 +534,11 @@
                 <button id="logoutBtn" class="secondary-btn" style="margin-left: auto; padding: 8px 12px; font-size: 14px;">Logout</button>
             </div>
 
-            <h3>Giveaway Settings</h3>
+            <h3>🎮 Giveaway Settings</h3>
             
             <input type="text" id="keywordInput" placeholder="Entry keyword (e.g., !enter)" value="!enter">
             
-            <button id="connectBtn" class="primary-btn">Connect to Chat</button>
+            <button id="connectBtn" class="primary-btn">🔗 Connect to Chat</button>
             <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
                 Status: <span id="chatStatus">Disconnected</span>
             </div>
@@ -543,23 +548,23 @@
                 <span style="color: var(--text-secondary);">!spin - Mods only: spin the wheel</span>
             </div>
 
-            <h3 style="margin-top: 30px;">Manual Controls</h3>
+            <h3 style="margin-top: 30px;">⚙️ Manual Controls</h3>
             
             <input type="text" id="usernameInput" placeholder="Add username manually">
-            <button id="addParticipantBtn" class="secondary-btn">Add Participant</button>
+            <button id="addParticipantBtn" class="secondary-btn">➕ Add Participant</button>
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">Clear All</button>
-                <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">Remove Winner</button>
+                <button id="clearWheelBtn" class="danger-btn" style="flex: 1;">🗑️ Clear All</button>
+                <button id="removeWinnerBtn" class="secondary-btn" style="flex: 1;">❌ Remove Winner</button>
             </div>
 
             <div class="participants-list">
-                <h4 style="margin-top: 0;">Participants (<span id="participantCount">0</span>)</h4>
+                <h4 style="margin-top: 0;">👥 Participants (<span id="participantCount">0</span>)</h4>
                 <div id="participantsList"></div>
             </div>
 
             <div class="help-section">
-                <h3>How to Use</h3>
+                <h3>💡 How to Use</h3>
                 <p><strong>1.</strong> Set your entry keyword</p>
                 <p><strong>2.</strong> Click "Connect to Chat"</p>
                 <p><strong>3.</strong> Tell viewers to type the keyword</p>
@@ -1074,7 +1079,7 @@
         function showWinner(winner) {
             var announcement = document.createElement('div');
             announcement.className = 'winner-announcement';
-            announcement.innerHTML = 'WINNER!<br>' + winner;
+            announcement.innerHTML = '🎉 WINNER! 🎉<br>' + winner;
             
             var wheelCanvas = document.getElementById('wheelCanvas');
             var wheelSection = wheelCanvas.parentElement;
@@ -1395,7 +1400,7 @@
                     updateConnectionStatus('Connected to #' + userInfo.login, 'connected');
                     var btn = document.getElementById('connectBtn');
                     if (btn) {
-                        btn.textContent = 'Disconnect';
+                        btn.textContent = '🔌 Disconnect';
                         btn.disabled = false;
                         btn.onclick = function() {
                             if (twitchSocket) twitchSocket.close();
@@ -1405,9 +1410,42 @@
 
                 if (line.indexOf('PRIVMSG') === -1) continue;
 
+                // Parse IRC tags for moderator detection
+                var tagMap = {};
+                var isModerator = false;
+                var isBroadcaster = false;
+                
+                if (line.charAt(0) === '@') {
+                    var firstSpace = line.indexOf(' ');
+                    var tagStr = line.substring(1, firstSpace);
+                    var pairs = tagStr.split(';');
+                    for (var j = 0; j < pairs.length; j++) {
+                        var pair = pairs[j];
+                        var eqIndex = pair.indexOf('=');
+                        var k = pair.substring(0, eqIndex);
+                        var v = pair.substring(eqIndex + 1);
+                        tagMap[k] = v || '';
+                    }
+                    
+                    // Check badges for moderator/broadcaster status
+                    var badges = tagMap.badges || '';
+                    if (badges) {
+                        isBroadcaster = badges.indexOf('broadcaster') !== -1;
+                        isModerator = badges.indexOf('moderator') !== -1 || isBroadcaster;
+                    }
+                    if (tagMap.mod === '1') isModerator = true;
+                }
+
                 var username = null;
                 var userMatch = line.match(/:([^!\s]+)!/);
-                if (userMatch) username = userMatch[1];
+                if (userMatch) {
+                    username = userMatch[1];
+                    // Broadcaster is always a moderator
+                    if (userInfo && userInfo.login && username.toLowerCase() === userInfo.login.toLowerCase()) {
+                        isBroadcaster = true;
+                        isModerator = true;
+                    }
+                }
 
                 var message = null;
                 var privIdx = line.indexOf(' PRIVMSG ');
@@ -1421,16 +1459,17 @@
 
                 if (username && message) {
                     if (message.toLowerCase() === entryKeyword.toLowerCase()) {
-                        handleChatEntry(username);
+                        handleChatEntry(username, isModerator);
                     }
-                    if (message.toLowerCase() === '!spin') {
+                    if (message.toLowerCase() === '!spin' && isModerator) {
                         spinWheel();
+                        showNotification(username + ' spun the wheel!', 'var(--accent-primary)');
                     }
                 }
             }
         }
 
-        function handleChatEntry(username) {
+        function handleChatEntry(username, isModerator) {
             var now = Date.now();
             
             if (participantCooldown.has(username)) {
@@ -1441,6 +1480,7 @@
             }
             
             if (participants.indexOf(username) === -1) {
+                // First time entry - anyone can enter
                 participants.push(username);
                 participantCooldown.set(username, now);
                 updateParticipantsList();
@@ -1449,7 +1489,18 @@
                 
                 document.getElementById('statusText').textContent = participants.length + ' participants ready! Latest: ' + username;
                 showNotification(username + ' entered!', 'var(--success-color)');
+            } else if (allowMultipleEntries && isModerator) {
+                // Multiple entries - only allowed for moderators
+                var currentWeight = participantWeights.get(username) || 1;
+                participantWeights.set(username, currentWeight + 1);
+                participantCooldown.set(username, now);
+                updateWeightsList();
+                drawWheel();
+                
+                document.getElementById('statusText').textContent = participants.length + ' participants ready! ' + username + ' entries: ' + (currentWeight + 1);
+                showNotification(username + ' (x' + (currentWeight + 1) + ')', 'var(--success-color)');
             }
+            // Regular users who already entered are silently ignored (no multiple entries)
         }
 
         function clearWheel() {
