@@ -1298,12 +1298,26 @@ function updateParticipantsList() {
     }
 
 function setupAppEventListeners() {
-        document.getElementById('addParticipantBtn').addEventListener('click', function() {
-            const name = document.getElementById('usernameInput').value.trim();
-            if (name) addParticipant(name);
-        });
+        // Add Participant button
+const addBtn = document.getElementById('addParticipantBtn');
+if (addBtn) {
+    addBtn.addEventListener('click', function () {
+        const name = document.getElementById('usernameInput').value.trim();
+        if (name) addParticipant(name);
+    });
+}
 
-        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+// Enter key in input box
+const usernameInput = document.getElementById('usernameInput');
+if (usernameInput) {
+    usernameInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const name = this.value.trim();
+            if (name) addParticipant(name);
+        }
+    });
+}('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const name = this.value.trim();
@@ -1717,16 +1731,12 @@ function setupAppEventListeners() {
         }
 
 
-                    }
 
             if (updated) {
                 updateWeightsList();
                 drawWheel();
                 showNotification(modUsername + ' set ' + targetUser + ' weight to ' + weight, 'var(--warning-color)');
-            }
-        }
 
-}
 </script>
 </body>
 </html>
