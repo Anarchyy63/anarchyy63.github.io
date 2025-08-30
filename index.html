@@ -765,6 +765,35 @@
             drawWheel();
         }
 
+        function previewWinnerText() {
+            console.log('Preview function called');
+            
+            // Get the current text from the input
+            const winnerTextInput = document.getElementById('winnerTextInput');
+            if (!winnerTextInput) {
+                console.log('Winner text input not found');
+                return;
+            }
+            
+            const currentText = winnerTextInput.value.trim() || winnerText;
+            console.log('Current text:', currentText);
+            console.log('Original winnerText:', winnerText);
+            
+            // Temporarily update winnerText for preview
+            const originalText = winnerText;
+            winnerText = currentText;
+            
+            // Show preview with test user
+            console.log('Calling showWinner with TestUser');
+            showWinner('TestUser');
+            
+            // Also show a simple alert to confirm the function works
+            setTimeout(() => {
+                alert('Preview shown! Check above the wheel for the celebration popup.');
+                winnerText = originalText;
+            }, 100);
+        }
+
         function saveSettings() {
             localStorage.setItem('wheelColors', JSON.stringify(wheelColors));
             closeSettings();
