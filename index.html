@@ -349,7 +349,7 @@
         .status-error { color: var(--error-color); }
 
         .winner-announcement {
-            position: fixed;
+            position: absolute;
             top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -1220,6 +1220,10 @@
             
             // Replace {winner} placeholder with actual winner name
             let displayText = winnerText.replace(/{winner}/g, winner);
+
+            //Convert line breaks into <br> for display
+            displayText = displayText.replace(/\n/g, '<br>');
+            
             announcement.innerHTML = displayText;
             
             const wheelCanvas = document.getElementById('wheelCanvas');
