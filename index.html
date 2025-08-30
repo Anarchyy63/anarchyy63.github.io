@@ -777,7 +777,6 @@
             }
             
             const currentText = winnerTextInput.value.trim() || winnerText;
-            
             console.log('Current text:', currentText);
             console.log('Original winnerText:', winnerText);
             
@@ -788,6 +787,15 @@
             // Show preview with test user
             console.log('Calling showWinner with TestUser');
             showWinner('TestUser');
+
+            // Hide the settings modal
+            const settingsModal = document.getElementById('settingsModal');
+            settingsModal.classList.remove('active'); // Hides the settings modal
+    
+            // Reopen the settings modal after 3 seconds
+            setTimeout(() => {
+                settingsModal.classList.add('active'); // Shows the settings modal
+            }, 3000); // 3000ms = 3 seconds
             
              winnerText = originalText;
         }
