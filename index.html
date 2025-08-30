@@ -82,6 +82,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: all 0.3s ease;
+            : 1000;
         }
 
         .theme-toggle:hover {
@@ -101,6 +102,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: all 0.3s ease;
+            : 1000;
         }
 
         .sound-toggle:hover {
@@ -120,6 +122,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: all 0.3s ease;
+            : 1000;
         }
 
         .settings-toggle:hover {
@@ -146,7 +149,7 @@
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
             box-shadow: 0 8px 32px var(--shadow-color);
-            position: relative;
+
         }
 
         .controls-section {
@@ -345,6 +348,66 @@
         .status-connected { color: var(--success-color); }
         .status-warning { color: var(--warning-color); }
         .status-error { color: var(--error-color); }
+
+        .winner-announcement {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            z-index: 4000;
+            animation: winnerPop 0.6s ease-out;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        @keyframes winnerPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            80% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .entry-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1500;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .help-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .help-section h3 {
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+        }
+
+        .help-section p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
 
         /* Settings Modal */
         .settings-modal {
