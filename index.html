@@ -360,7 +360,7 @@
             font-size: 1.2rem;
             font-weight: bold;
             box-shadow: 0 10px 30px var(--shadow-color);
-            z-index: 4000;
+            z-index: 4001;
             animation: winnerPop 0.6s ease-out;
             text-align: center;
             white-space: nowrap;
@@ -795,6 +795,13 @@
         }
 
         function saveSettings() {
+            // Save winner text from input field to winnerText variable
+    const winnerTextInput = document.getElementById('winnerTextInput');
+    if (winnerTextInput) {
+        winnerText = winnerTextInput.value.trim();
+    }
+
+            // Save wheel colors to local storage
             localStorage.setItem('wheelColors', JSON.stringify(wheelColors));
             closeSettings();
             
