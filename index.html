@@ -1545,23 +1545,7 @@
         }
     }
 }
-            // Handle spin command for moderators or broadcaster
-            if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
-                spinWheel();
-
-                const n = document.createElement('div');
-                n.className = 'entry-notification';
-                n.innerHTML = `🎯 ${username} spun the wheel!`;
-                n.style.background = 'var(--accent-primary)';
-                document.body.appendChild(n);
-                setTimeout(() => {
-                    if (document.body.contains(n)) document.body.removeChild(n);
-                }, 3000);
-            }
-        }
-    }
-}
-
+        
         function handleChatEntry(username) {
             const now = Date.now();
             const cooldownTime = 5000;
