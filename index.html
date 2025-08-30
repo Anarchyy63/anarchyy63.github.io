@@ -1406,13 +1406,13 @@
             document.getElementById('connectBtn').disabled = false;
         }
 
-      function handleTwitchMessage(rawMessage) {
-        const lines = rawMessage.split('\r\n');
-        for (let line of lines) {
-        if (!line) continue;
+        function handleTwitchMessage(rawMessage) {
+         const lines = rawMessage.split('\r\n');
+         for (let line of lines) {
+         if (!line) continue;
 
-        if (line.startsWith('PING')) {
-            try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch (e) {}
+         if (line.startsWith('PING')) {
+          try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch (e) {}
             continue;
         }
 
@@ -1503,6 +1503,48 @@
                     }
                 }
             }
+
+            // Handle the !removewinner command for moderators
+            if (message.toLowerCase() === '!removewinner' && (isModerator || isBroadcaster)) {
+                if (lastWinner) {
+                    removeParticipant(lastWinner);  // Remove the most recent winner
+                    lastWinner = null;
+                    const n = document.createElement('div');
+                    n.className = 'entry-notification';
+                    n.innerHTML = `❌ The most recent winner has been removed from the wheel.`;
+                    n.style.background = 'var(--error-color)';
+                    document.body.appendChild(n);
+                    setTimeout(() => {
+                        if (document.body.contains(n)) document.body.removeChild(n);
+                    }, 3000);
+                } else {
+                    const n = document.createElement('div');
+                    n.className = 'entry-notification';
+                    n.innerHTML = `❌ No winner to remove.`;
+                    n.style.background = 'var(--error-color)';
+                    document.body.appendChild(n);
+                    setTimeout(() => {
+                        if (document.body.contains(n)) document.body.removeChild(n);
+                    }, 3000);
+                }
+            }
+
+            // Handle spin command for moderators or broadcaster
+            if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
+                spinWheel();
+
+                const n = document.createElement('div');
+                n.className = 'entry-notification';
+                n.innerHTML = `🎯 ${username} spun the wheel!`;
+                n.style.background = 'var(--accent-primary)';
+                document.body.appendChild(n);
+                setTimeout(() => {
+                    if (document.body.contains(n)) document.body.removeChild(n);
+                }, 3000);
+            }
+        }
+    }
+}
 
             // Handle spin command for moderators or broadcaster
             if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
