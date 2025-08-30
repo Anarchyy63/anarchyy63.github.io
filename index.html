@@ -1404,82 +1404,96 @@
             document.getElementById('connectBtn').disabled = false;
         }
 
-        function handleTwitchMessage(rawMessage) {
-            const lines = rawMessage.split('\r\n');
-            for (let line of lines) {
-                if (!line) continue;
+      function handleTwitchMessage(rawMessage) {
+        const lines = rawMessage.split('\r\n');
+        for (let line of lines) {
+        if (!line) continue;
 
-                if (line.startsWith('PING')) {
-                    try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch (e) {}
-                    continue;
-                }
+        if (line.startsWith('PING')) {
+            try { twitchSocket.send('PONG :tmi.twitch.tv\r\n'); } catch (e) {}
+            continue;
+        }
 
-                if (line.includes('001') || line.includes('Welcome')) {
-                    updateConnectionStatus('Authenticated', 'warning');
-                }
+        if (line.includes('001') || line.includes('Welcome')) {
+            updateConnectionStatus('Authenticated', 'warning');
+        }
 
-                if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
-                    isConnected = true;
-                    updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
-                    const btn = document.getElementById('connectBtn');
-                    if (btn) {
-                        btn.textContent = '🔌 Disconnect';
-                        btn.disabled = false;
-                        btn.onclick = disconnectFromTwitch;
-                    }
-                }
+        if (line.includes('366') && line.includes(`#${userInfo.login}`)) {
+            isConnected = true;
+            updateConnectionStatus(`Connected to #${userInfo.login}`, 'connected');
+            const btn = document.getElementById('connectBtn');
+            if (btn) {
+                btn.textContent = '🔌 Disconnect';
+                btn.disabled = false;
+                btn.onclick = disconnectFromTwitch;
+            }
+        }
 
-                if (!line.includes('PRIVMSG')) continue;
+        if (!line.includes('PRIVMSG')) continue;
 
-                const tagMap = {};
-                if (line.startsWith('@')) {
-                    const firstSpace = line.indexOf(' ');
-                    const tagStr = line.substring(1, firstSpace);
-                    tagStr.split(';').forEach(p => {
-                        const [k, v] = p.split('=');
-                        tagMap[k] = v ?? '';
-                    });
-                }
+        const tagMap = {};
+        if (line.startsWith('@')) {
+            const firstSpace = line.indexOf(' ');
+            const tagStr = line.substring(1, firstSpace);
+            tagStr.split(';').forEach(p => {
+                const [k, v] = p.split('=');
+                tagMap[k] = v ?? '';
+            });
+        }
 
-                const userMatch = line.match(/:([^!\s]+)!/);
-                const username = userMatch ? userMatch[1] : null;
+        const userMatch = line.match(/:([^!\s]+)!/);
+        const username = userMatch ? userMatch[1] : null;
 
-                let message = null;
-                const privIdx = line.indexOf(' PRIVMSG ');
-                if (privIdx !== -1) {
-                    const after = line.slice(privIdx);
-                    const colonIdx = after.indexOf(' :');
-                    if (colonIdx !== -1) {
-                        message = after.slice(colonIdx + 2).trim();
-                    }
-                }
+        let message = null;
+        const privIdx = line.indexOf(' PRIVMSG ');
+        if (privIdx !== -1) {
+            const after = line.slice(privIdx);
+            const colonIdx = after.indexOf(' :');
+            if (colonIdx !== -1) {
+                message = after.slice(colonIdx + 2).trim();
+            }
+        }
 
-                let isBroadcaster = false;
-                let isModerator = false;
+        let isBroadcaster = false;
+        let isModerator = false;
 
-                const badges = tagMap.badges || '';
-                if (badges) {
-                    isBroadcaster = badges.includes('broadcaster');
-                    isModerator = badges.includes('moderator') || isBroadcaster;
-                }
-                if (tagMap.mod === '1') isModerator = true;
-                if (username && userInfo && userInfo.login && username.toLowerCase() === userInfo.login.toLowerCase()) {
-                    isBroadcaster = true;
-                    isModerator = true;
-                }
+        const badges = tagMap.badges || '';
+        if (badges) {
+            isBroadcaster = badges.includes('broadcaster');
+            isModerator = badges.includes('moderator') || isBroadcaster;
+        }
+        if (tagMap.mod === '1') isModerator = true;
+        if (username && userInfo && userInfo.login && username.toLowerCase() === userInfo.login.toLowerCase()) {
+            isBroadcaster = true;
+            isModerator = true;
+        }
 
-                if (username && message) {
-                    if (typeof entryKeyword === 'string' && message.toLowerCase() === entryKeyword.toLowerCase()) {
-                        handleChatEntry(username);
-                    }
+        if (username && message) {
+            // Handle entry with entryKeyword
+            if (typeof entryKeyword === 'string' && message.toLowerCase() === entryKeyword.toLowerCase()) {
+                handleChatEntry(username);
+            }
 
-                    if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
-                        spinWheel();
-
+            // Handle the !addentry command for moderators
+            if (message.toLowerCase().startsWith('!addentry')) {
+                const parts = message.split(' ');
+                if (parts.length === 2) {
+                    const entryUsername = parts[1];
+                    if (isModerator) {
+                        addParticipant(entryUsername);  // Add the participant
                         const n = document.createElement('div');
                         n.className = 'entry-notification';
-                        n.innerHTML = `🎯 ${username} spun the wheel!`;
-                        n.style.background = 'var(--accent-primary)';
+                        n.innerHTML = `🎯 ${username} added ${entryUsername} to the wheel!`;
+                        n.style.background = 'var(--success-color)';
+                        document.body.appendChild(n);
+                        setTimeout(() => {
+                            if (document.body.contains(n)) document.body.removeChild(n);
+                        }, 3000);
+                    } else {
+                        const n = document.createElement('div');
+                        n.className = 'entry-notification';
+                        n.innerHTML = `❌ You need to be a moderator to use !addentry.`;
+                        n.style.background = 'var(--error-color)';
                         document.body.appendChild(n);
                         setTimeout(() => {
                             if (document.body.contains(n)) document.body.removeChild(n);
@@ -1487,7 +1501,23 @@
                     }
                 }
             }
+
+            // Handle spin command for moderators or broadcaster
+            if ((isModerator || isBroadcaster) && message.toLowerCase() === '!spin') {
+                spinWheel();
+
+                const n = document.createElement('div');
+                n.className = 'entry-notification';
+                n.innerHTML = `🎯 ${username} spun the wheel!`;
+                n.style.background = 'var(--accent-primary)';
+                document.body.appendChild(n);
+                setTimeout(() => {
+                    if (document.body.contains(n)) document.body.removeChild(n);
+                }, 3000);
+            }
         }
+    }
+}
 
         function handleChatEntry(username) {
             const now = Date.now();
