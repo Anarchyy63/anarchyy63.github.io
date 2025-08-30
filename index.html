@@ -777,6 +777,7 @@
             }
             
             const currentText = winnerTextInput.value.trim() || winnerText;
+            
             console.log('Current text:', currentText);
             console.log('Original winnerText:', winnerText);
             
@@ -788,10 +789,7 @@
             console.log('Calling showWinner with TestUser');
             showWinner('TestUser');
             
-            // Also show a simple alert to confirm the function works
-            setTimeout(() => {
-                alert('Preview shown! Check above the wheel for the celebration popup.');
-                winnerText = originalText;
+             winnerText = originalText;
             }, 100);
         }
 
