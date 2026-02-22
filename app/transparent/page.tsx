@@ -41,7 +41,7 @@ export default function TransparentMode() {
   const wheel = useWheel();
   const twitch = useTwitch();
   const obs = useOBS();
-  const { playCongratsSound, playTickSound } = useAudio();
+  const { soundsEnabled, toggleSound, playCongratsSound, playTickSound } = useAudio();
   const notifications = useNotifications();
   const { celebrationConfetti } = useConfetti();
   const layoutManager = useLayoutManager();
@@ -216,7 +216,7 @@ export default function TransparentMode() {
       {/* Minimal UI Controls for OBS */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
         <ThemeToggle />
-        <SoundToggle />
+        <SoundToggle soundsEnabled={soundsEnabled} toggleSound={toggleSound} />
         <SettingsToggle onClick={() => setIsSettingsOpen(true)} />
         <LayoutToggle 
           isDragMode={layoutManager.isDragMode}

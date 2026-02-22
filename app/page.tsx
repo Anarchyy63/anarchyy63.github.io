@@ -42,7 +42,7 @@ export default function Home() {
   const wheel = useWheel();
   const twitch = useTwitch();
   const obs = useOBS();
-  const { playCongratsSound, playTickSound } = useAudio();
+  const { soundsEnabled, toggleSound, playCongratsSound, playTickSound } = useAudio();
   const notifications = useNotifications();
   const { celebrationConfetti } = useConfetti();
   const layoutManager = useLayoutManager();
@@ -191,7 +191,7 @@ export default function Home() {
     return (
       <>
         <ThemeToggle />
-        <SoundToggle />
+        <SoundToggle soundsEnabled={soundsEnabled} toggleSound={toggleSound} />
 
         <div className="min-h-screen p-5">
           <div className="text-center mb-8">
@@ -217,7 +217,7 @@ export default function Home() {
   return (
     <>
       <ThemeToggle />
-      <SoundToggle />
+      <SoundToggle soundsEnabled={soundsEnabled} toggleSound={toggleSound} />
       <SettingsToggle onClick={() => setIsSettingsOpen(true)} />
       <LayoutToggle
         isDragMode={layoutManager.isDragMode}

@@ -1,15 +1,15 @@
 'use client';
 
-import { useAudio } from '@/hooks/useAudio';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
 interface SoundToggleProps {
+  soundsEnabled: boolean;
+  toggleSound: () => void;
   className?: string;
 }
 
-export function SoundToggle({ className }: SoundToggleProps) {
-  const { soundsEnabled, toggleSound } = useAudio();
+export function SoundToggle({ soundsEnabled, toggleSound, className }: SoundToggleProps) {
 
   return (
     <Button

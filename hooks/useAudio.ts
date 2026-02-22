@@ -14,17 +14,24 @@ interface UseAudioReturn {
 export function useAudio(): UseAudioReturn {
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
   const currentTickOscillatorRef = useRef<OscillatorNode | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('soundsEnabled');
-    if (saved !== null) {
-      setSoundsEnabled(saved === 'true');
-    }
+    const initialEnabled = saved !== null ? saved === 'true' : true;
+    setSoundsEnabled(initialEnabled);
 
     if (typeof AudioContext !== 'undefined' || typeof (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext !== 'undefined') {
       const AudioContextClass = AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass();
+      const ctx = new AudioContextClass();
+      audioContextRef.current = ctx;
+
+      // Master gain node — all game sounds route through this
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(initialEnabled ? 1 : 0, ctx.currentTime);
+      master.connect(ctx.destination);
+      masterGainRef.current = master;
     }
 
     return () => {
@@ -46,9 +53,9 @@ export function useAudio(): UseAudioReturn {
       const gainNode = audioContextRef.current.createGain();
 
       oscillator.connect(gainNode);
+      // Bypass master gain so toggle feedback always plays
       gainNode.connect(audioContextRef.current.destination);
 
-      // Higher pitch for "on" sound
       oscillator.frequency.setValueAtTime(800, audioContextRef.current.currentTime);
       oscillator.type = 'sine';
 
@@ -74,9 +81,9 @@ export function useAudio(): UseAudioReturn {
       const gainNode = audioContextRef.current.createGain();
 
       oscillator.connect(gainNode);
+      // Bypass master gain so toggle feedback always plays
       gainNode.connect(audioContextRef.current.destination);
 
-      // Lower pitch for "off" sound
       oscillator.frequency.setValueAtTime(400, audioContextRef.current.currentTime);
       oscillator.type = 'sine';
 
@@ -94,8 +101,15 @@ export function useAudio(): UseAudioReturn {
     const newState = !soundsEnabled;
     setSoundsEnabled(newState);
     localStorage.setItem('soundsEnabled', newState.toString());
-    
-    // Always play toggle sound regardless of current state to provide feedback
+
+    if (masterGainRef.current && audioContextRef.current) {
+      // Instantly cut or restore all master-routed audio
+      masterGainRef.current.gain.setValueAtTime(
+        newState ? 1 : 0,
+        audioContextRef.current.currentTime
+      );
+    }
+
     if (newState) {
       playToggleOnSound();
     } else {
@@ -104,7 +118,7 @@ export function useAudio(): UseAudioReturn {
   }, [soundsEnabled, playToggleOnSound, playToggleOffSound]);
 
   const playTickSound = useCallback(() => {
-    if (!soundsEnabled || !audioContextRef.current) return;
+    if (!soundsEnabled || !audioContextRef.current || !masterGainRef.current) return;
 
     try {
       if (currentTickOscillatorRef.current) {
@@ -123,7 +137,7 @@ export function useAudio(): UseAudioReturn {
       const gainNode = audioContextRef.current.createGain();
 
       oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
+      gainNode.connect(masterGainRef.current);
 
       oscillator.frequency.setValueAtTime(500, audioContextRef.current.currentTime);
       oscillator.type = 'sine';
@@ -144,7 +158,7 @@ export function useAudio(): UseAudioReturn {
   }, [soundsEnabled]);
 
   const playCongratsSound = useCallback(() => {
-    if (!soundsEnabled || !audioContextRef.current) return;
+    if (!soundsEnabled || !audioContextRef.current || !masterGainRef.current) return;
 
     try {
       if (audioContextRef.current.state === 'suspended') {
@@ -159,7 +173,7 @@ export function useAudio(): UseAudioReturn {
         const gainNode = audioContextRef.current!.createGain();
 
         oscillator.connect(gainNode);
-        gainNode.connect(audioContextRef.current!.destination);
+        gainNode.connect(masterGainRef.current!);
 
         oscillator.frequency.setValueAtTime(freq, audioContextRef.current!.currentTime);
         oscillator.type = 'sine';
@@ -174,21 +188,23 @@ export function useAudio(): UseAudioReturn {
       });
 
       setTimeout(() => {
-        const highOsc = audioContextRef.current!.createOscillator();
-        const highGain = audioContextRef.current!.createGain();
+        if (!audioContextRef.current || !masterGainRef.current) return;
+
+        const highOsc = audioContextRef.current.createOscillator();
+        const highGain = audioContextRef.current.createGain();
 
         highOsc.connect(highGain);
-        highGain.connect(audioContextRef.current!.destination);
+        highGain.connect(masterGainRef.current);
 
-        highOsc.frequency.setValueAtTime(1046.5, audioContextRef.current!.currentTime);
+        highOsc.frequency.setValueAtTime(1046.5, audioContextRef.current.currentTime);
         highOsc.type = 'sine';
 
-        highGain.gain.setValueAtTime(0, audioContextRef.current!.currentTime);
-        highGain.gain.linearRampToValueAtTime(0.2, audioContextRef.current!.currentTime + 0.1);
-        highGain.gain.exponentialRampToValueAtTime(0.001, audioContextRef.current!.currentTime + 0.6);
+        highGain.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+        highGain.gain.linearRampToValueAtTime(0.2, audioContextRef.current.currentTime + 0.1);
+        highGain.gain.exponentialRampToValueAtTime(0.001, audioContextRef.current.currentTime + 0.6);
 
-        highOsc.start(audioContextRef.current!.currentTime);
-        highOsc.stop(audioContextRef.current!.currentTime + 0.6);
+        highOsc.start(audioContextRef.current.currentTime);
+        highOsc.stop(audioContextRef.current.currentTime + 0.6);
       }, 300);
     } catch (error) {
       console.log('Congratulations sound failed:', error);
