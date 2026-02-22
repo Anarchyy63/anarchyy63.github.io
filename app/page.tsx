@@ -244,7 +244,7 @@ export default function Home() {
                 📺 Open OBS Mode
               </a>
               <p className="text-sm text-[var(--text-secondary)] mt-2">
-                OBS Browser Source URL: <code className="bg-[var(--bg-tertiary)] px-2 py-1 rounded text-xs">https://anarchywheel.vercel.app> (add <code className="bg-[var(--bg-tertiary)] px-2 py-1 rounded text-xs">/transparent</code> for transparent mode)
+                OBS Browser Source URL: <code className="bg-[var(--bg-tertiary)] px-2 py-1 rounded text-xs">https://anarchywheel.vercel.app</code> (add <code className="bg-[var(--bg-tertiary)] px-2 py-1 rounded text-xs">/transparent</code> for transparent mode)
               </p>
             </div>
           )}
